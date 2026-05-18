@@ -2,6 +2,10 @@
   "name": "azure-lanka-travels-vercel-preview",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.9.2",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,7 +14,7 @@
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
-    "next": "^14.2.35",
+    "next": "14.2.35",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
