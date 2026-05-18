@@ -1,0 +1,29 @@
+[
+  {
+    "id": "PKG-01",
+    "title": "Full-Day Yala Safari",
+    "price": "$120",
+    "duration": "10\u201312 hours",
+    "capacity": "6 per jeep",
+    "visibility": "Published",
+    "featured": true
+  },
+  {
+    "id": "PKG-02",
+    "title": "Half-Day Morning Safari",
+    "price": "$70",
+    "duration": "4\u20135 hours",
+    "capacity": "6 per jeep",
+    "visibility": "Published",
+    "featured": true
+  },
+  {
+    "id": "PKG-03",
+    "title": "Half-Day Evening Safari",
+    "price": "$70",
+    "duration": "4\u20135 hours",
+    "capacity": "6 per jeep",
+    "visibility": "Published",
+    "featured": true
+  }
+]

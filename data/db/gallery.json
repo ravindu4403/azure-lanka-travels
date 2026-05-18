@@ -1,0 +1,32 @@
+[
+  {
+    "id": "GAL-01",
+    "title": "Leopard at Yala trail",
+    "category": "Wildlife",
+    "status": "Published",
+    "type": "Image",
+    "imageUrl": "/images/animals/leopard.png",
+    "alt": "Sri Lankan leopard during a Yala National Park safari",
+    "caption": "A powerful wildlife moment for serious safari lovers."
+  },
+  {
+    "id": "GAL-02",
+    "title": "Elephant near waterhole",
+    "category": "Wildlife",
+    "status": "Published",
+    "type": "Image",
+    "imageUrl": "/images/animals/elephant.png",
+    "alt": "Asian elephant encounter in Yala National Park Sri Lanka",
+    "caption": "Elephant encounters are one of the most memorable parts of Yala."
+  },
+  {
+    "id": "GAL-04",
+    "title": "Wild waterhole crocodile",
+    "category": "Wildlife",
+    "status": "Published",
+    "type": "Image",
+    "imageUrl": "/images/animals/crocodile.png",
+    "alt": "Mugger crocodile near Yala National Park waterhole",
+    "caption": "Reptile sightings add a rare adventure feel to the safari."
+  }
+]
