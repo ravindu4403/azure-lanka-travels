@@ -110,7 +110,7 @@ export default function BookingForm({ settings }) {
       setBookingId(result.booking.id);
       setStatus({
         type: 'success',
-        message: 'Done! Your request is saved in Admin → Bookings as Pending. We will confirm through WhatsApp.',
+        message: 'Saved in Admin → Bookings as Pending. WhatsApp is opening only to send the same details to Azure Lanka Travels for quick confirmation.',
       });
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
       setForm((current) => ({ ...current, note: '' }));
@@ -192,10 +192,10 @@ export default function BookingForm({ settings }) {
           <textarea name="note" placeholder="Pickup hotel, preferred time, meal request..." rows="4" value={form.note} onChange={updateField} />
         </label>
         <button className="booking-submit" type="submit" disabled={status.type === 'loading'}>
-          {status.type === 'loading' ? 'Saving Request...' : 'Submit Booking Request'}
+          {status.type === 'loading' ? 'Saving Request...' : 'Save Booking & Open WhatsApp'}
         </button>
         {status.message && <p className={`form-status ${status.type}`}>{status.message}{bookingId ? ` Ref: ${bookingId}` : ''}</p>}
-        <small>After submit: request appears in Admin → Bookings. Admin can accept, reject, complete or cancel the booking.</small>
+        <small>After submit: the request is saved in Admin → Bookings first. Then WhatsApp opens with the same details so the traveler can send a quick message to Azure Lanka Travels.</small>
       </form>
     </section>
   );

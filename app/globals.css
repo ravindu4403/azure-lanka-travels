@@ -925,7 +925,8 @@ main { width: 100%; overflow: hidden; }
   border-radius: 28px;
   box-shadow: 0 18px 45px rgba(17,59,37,.1);
 }
-.admin-stat-card { padding: 20px; }
+.admin-stat-card { padding: 20px; text-decoration: none; color: inherit; display: block; transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.admin-stat-card.clickable:hover { transform: translateY(-4px); border-color: rgba(46,107,54,.32); box-shadow: 0 24px 56px rgba(17,59,37,.16); }
 .admin-stat-card svg { color: var(--green-700); }
 .admin-stat-card span { display: block; margin-top: 14px; color: var(--muted); font-weight: 900; font-size: .82rem; }
 .admin-stat-card strong { display: block; color: var(--green-900); font-size: 2rem; margin: 4px 0; font-family: Poppins, sans-serif; }
@@ -937,7 +938,8 @@ main { width: 100%; overflow: hidden; }
 .admin-panel-card h2 { margin: 6px 0 0; color: var(--green-900); font-family: Poppins, sans-serif; letter-spacing: -.03em; font-size: clamp(1.35rem, 2.8vw, 2.05rem); }
 .admin-note { max-width: 380px; color: var(--muted); font-weight: 800; line-height: 1.45; margin: 0; }
 .admin-task-list { display: grid; gap: 12px; }
-.admin-task-list p {
+.admin-task-list p,
+.admin-task-list a {
   margin: 0;
   background: #f7fbf7;
   border: 1px solid rgba(46,107,54,.12);
@@ -946,6 +948,8 @@ main { width: 100%; overflow: hidden; }
   font-weight: 800;
   line-height: 1.4;
 }
+.admin-task-list a { color: var(--green-900); text-decoration: none; font-weight: 900; transition: transform .2s ease, border-color .2s ease; }
+.admin-task-list a:hover { transform: translateX(4px); border-color: rgba(46,107,54,.28); }
 .admin-task-list strong { color: var(--green-700); font-size: 1.2rem; }
 .admin-seo-card p,
 .admin-seo-card li { color: var(--muted); font-weight: 800; line-height: 1.55; }

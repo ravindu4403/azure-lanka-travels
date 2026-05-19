@@ -1,26 +1,65 @@
+import Link from 'next/link';
 import AdminShell from '@/components/admin/AdminShell';
-import { adminStats, bookingRows } from '@/data/adminData';
-import { reviewRecords } from '@/data/reviews';
+import { readCollection } from '@/lib/jsonDb';
 import { CalendarCheck, Star, PackageOpen, TrendingUp } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-const icons = [TrendingUp, CalendarCheck, PackageOpen, Star];
 
-export default function AdminDashboardPage() {
-  const pendingReviews = reviewRecords.filter((review) => review.status === 'pending');
+function isUpcomingBooking(booking) {
+  if (!booking?.date) return false;
+  const status = String(booking.status || '').toLowerCase();
+  if (['rejected', 'cancelled', 'completed'].includes(status)) return false;
+  const bookingDate = new Date(`${booking.date}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return !Number.isNaN(bookingDate.getTime()) && bookingDate >= today;
+}
+
+async function safeCollection(name) {
+  try {
+    return await readCollection(name);
+  } catch (error) {
+    console.error(`Admin dashboard failed to read ${name}`, error);
+    return [];
+  }
+}
+
+export default async function AdminDashboardPage() {
+  const [bookings, contactRequests, accommodationRequests, packages, reviews] = await Promise.all([
+    safeCollection('bookings'),
+    safeCollection('contactRequests'),
+    safeCollection('accommodationRequests'),
+    safeCollection('packages'),
+    safeCollection('reviews'),
+  ]);
+
+  const pendingBookings = bookings.filter((item) => String(item.status || '').toLowerCase() === 'pending');
+  const newInquiries = contactRequests.filter((item) => ['new', 'open', 'pending'].includes(String(item.status || '').toLowerCase()));
+  const newAccommodation = accommodationRequests.filter((item) => ['new', 'searching hotels'].includes(String(item.status || '').toLowerCase()));
+  const pendingReviews = reviews.filter((item) => String(item.status || '').toLowerCase() === 'pending');
+  const draftPackages = packages.filter((item) => String(item.visibility || '').toLowerCase() !== 'published');
+  const upcomingSafaris = bookings.filter(isUpcomingBooking);
+  const approvedReviews = reviews.filter((item) => String(item.status || '').toLowerCase() === 'approved');
+
+  const stats = [
+    { label: 'Total Bookings', value: bookings.length, trend: pendingBookings.length ? `${pendingBookings.length} pending` : 'No pending bookings', href: '/admin/bookings', icon: TrendingUp },
+    { label: 'Pending Requests', value: pendingBookings.length + newInquiries.length + newAccommodation.length + pendingReviews.length, trend: 'Needs review', href: '/admin/bookings', icon: CalendarCheck },
+    { label: 'Upcoming Safaris', value: upcomingSafaris.length, trend: 'From live booking dates', href: '/admin/bookings', icon: PackageOpen },
+    { label: 'Approved Reviews', value: approvedReviews.length, trend: `${pendingReviews.length} waiting`, href: '/admin/reviews', icon: Star },
+  ];
 
   return (
     <AdminShell title="Admin Dashboard">
       <section className="admin-stats-grid">
-        {adminStats.map((stat, index) => {
-          const Icon = icons[index];
+        {stats.map((stat) => {
+          const Icon = stat.icon;
           return (
-            <article className="admin-stat-card" key={stat.label}>
+            <Link className="admin-stat-card clickable" href={stat.href} key={stat.label}>
               <Icon size={22} />
               <span>{stat.label}</span>
               <strong>{stat.value}</strong>
               <p>{stat.trend}</p>
-            </article>
+            </Link>
           );
         })}
       </section>
@@ -31,9 +70,11 @@ export default function AdminDashboardPage() {
             <div><span>Today Focus</span><h2>Pending actions</h2></div>
           </div>
           <div className="admin-task-list">
-            <p><strong>{bookingRows.filter((row) => row.status === 'Pending').length}</strong> booking requests need accept/reject action.</p>
-            <p><strong>{pendingReviews.length}</strong> customer reviews are waiting for approval.</p>
-            <p><strong>1</strong> package is still in draft and hidden from customers.</p>
+            <Link href="/admin/bookings"><strong>{pendingBookings.length}</strong> booking requests need accept/reject action.</Link>
+            <Link href="/admin/contact-requests"><strong>{newInquiries.length}</strong> customer inquiries are waiting for reply.</Link>
+            <Link href="/admin/accommodation"><strong>{newAccommodation.length}</strong> accommodation requests need follow-up.</Link>
+            <Link href="/admin/reviews"><strong>{pendingReviews.length}</strong> customer reviews are waiting for approval.</Link>
+            <Link href="/admin/packages"><strong>{draftPackages.length}</strong> packages are still in draft and hidden from customers.</Link>
           </div>
         </article>
 
