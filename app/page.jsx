@@ -15,6 +15,7 @@ import JsonLd from '@/components/JsonLd';
 import Footer from '@/components/Footer';
 import { getSiteSettings, getWhatsappUrl } from '@/lib/siteSettings';
 
+export const dynamic = 'force-dynamic';
 export async function generateMetadata() {
   const settings = await getSiteSettings();
   const keywords = String(settings.seoKeywords || '').split(',').map((item) => item.trim()).filter(Boolean);

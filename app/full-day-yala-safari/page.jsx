@@ -3,6 +3,7 @@ import BookingForm from '@/components/BookingForm';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import Footer from '@/components/Footer';
 
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Full-Day Yala Safari | Azure Lanka Travels',
   description: 'Full-day Yala safari package for wildlife lovers and photographers. Extended park time, sunrise and golden-hour safari moments.',

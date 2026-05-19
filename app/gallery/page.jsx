@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import { readCollection } from '@/lib/jsonDb';
 import { getSiteSettings } from '@/lib/siteSettings';
 
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Yala Safari Gallery | Azure Lanka Travels',
   description: 'View wildlife photos, safari moments and guest memories from Azure Lanka Travels Yala safari experiences.',

@@ -5,11 +5,7 @@ import Footer from '@/components/Footer';
 import { readCollection } from '@/lib/jsonDb';
 import { getSiteSettings } from '@/lib/siteSettings';
 
-export async function generateStaticParams() {
-  const blogs = await readCollection('blogs');
-  return blogs.filter((blog) => blog.status === 'Published').map((blog) => ({ slug: blog.slug }));
-}
-
+export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }) {
   const blogs = await readCollection('blogs');
   const blog = blogs.find((item) => item.slug === params.slug && item.status === 'Published');

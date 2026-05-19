@@ -4,6 +4,7 @@ import FAQSection from '@/components/FAQSection';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import Footer from '@/components/Footer';
 
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Yala Safari Booking | Azure Lanka Travels',
   description: 'Book a Yala National Park safari with Azure Lanka Travels. Choose full-day, morning or evening safari packages with fast WhatsApp booking support.',

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
 import { ADMIN_COOKIE_NAME, isAdminSessionValid } from '@/lib/adminAuth';
 
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Admin Login | Azure Lanka Travels',
   robots: { index: false, follow: false },

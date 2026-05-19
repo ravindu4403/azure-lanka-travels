@@ -2,6 +2,7 @@ import AdminShell from '@/components/admin/AdminShell';
 import SiteSettingsForm from '@/components/admin/SiteSettingsForm';
 import { getSiteSettings } from '@/lib/siteSettings';
 
+export const dynamic = 'force-dynamic';
 export default async function AdminSettingsPage() {
   const settings = await getSiteSettings();
   return (

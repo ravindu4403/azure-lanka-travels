@@ -3,6 +3,7 @@ import { adminStats, bookingRows } from '@/data/adminData';
 import { reviewRecords } from '@/data/reviews';
 import { CalendarCheck, Star, PackageOpen, TrendingUp } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 const icons = [TrendingUp, CalendarCheck, PackageOpen, Star];
 
 export default function AdminDashboardPage() {

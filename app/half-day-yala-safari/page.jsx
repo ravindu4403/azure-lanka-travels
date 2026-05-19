@@ -3,6 +3,7 @@ import BookingForm from '@/components/BookingForm';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import Footer from '@/components/Footer';
 
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Half-Day Yala Safari | Morning & Evening Safari',
   description: 'Book a half-day Yala safari for morning wildlife movement or golden-hour evening safari moments with Azure Lanka Travels.',

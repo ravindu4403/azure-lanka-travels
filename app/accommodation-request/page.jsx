@@ -4,6 +4,7 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import AccommodationRequestForm from '@/components/AccommodationRequestForm';
 import { getSiteSettings, getWhatsappUrl } from '@/lib/siteSettings';
 
+export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Yala Accommodation Request | Azure Lanka Travels',
   description: 'Request accommodation assistance near Yala, Tissamaharama and Kataragama with Azure Lanka Travels. We help tourists find suitable hotels before or after safari.',
