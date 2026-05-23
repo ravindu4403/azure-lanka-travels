@@ -5448,3 +5448,23 @@ body.meal-modal-open .sticky-whatsapp {
     display: grid;
   }
 }
+
+/* Phase 27 — context-aware booking status action buttons */
+.admin-no-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(17, 59, 37, .08);
+  color: #52645a;
+  font-size: .78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.booking-detail-actions .admin-no-actions {
+  width: 100%;
+  min-height: 46px;
+  background: rgba(17, 59, 37, .1);
+}

@@ -19,6 +19,48 @@ function AdminMediaPreview({ src, type, alt = 'Uploaded media' }) {
   return <img className="admin-upload-preview-media" src={src} alt={alt} />;
 }
 
+
+function getBookingStatusActions(status = '') {
+  const normalized = String(status || 'Pending').toLowerCase();
+
+  if (normalized === 'accepted') {
+    return [
+      { label: 'Complete', nextStatus: 'Completed', className: '' },
+      { label: 'Cancel', nextStatus: 'Cancelled', className: 'muted' },
+    ];
+  }
+
+  if (normalized === 'pending') {
+    return [
+      { label: 'Accept', nextStatus: 'Accepted', className: '' },
+      { label: 'Reject', nextStatus: 'Rejected', className: 'danger' },
+      { label: 'Cancel', nextStatus: 'Cancelled', className: 'muted' },
+    ];
+  }
+
+  return [];
+}
+
+function BookingStatusActionButtons({ status, saving = false, onStatusChange, longLabels = false }) {
+  const actions = getBookingStatusActions(status);
+
+  if (!actions.length) {
+    return <span className="admin-no-actions">No further action</span>;
+  }
+
+  return actions.map((action) => (
+    <button
+      key={action.nextStatus}
+      type="button"
+      disabled={saving}
+      className={action.className}
+      onClick={() => onStatusChange(action.nextStatus)}
+    >
+      {longLabels && action.nextStatus === 'Accepted' ? 'Accept Booking' : longLabels && action.nextStatus === 'Completed' ? 'Mark Completed' : action.label}
+    </button>
+  ));
+}
+
 function AdminMediaUploadField({
   label = 'Media file',
   value = '',
@@ -152,10 +194,11 @@ export function BookingsTable() {
                 <td>
                   <div className="booking-admin-actions">
                     <button type="button" className="view" onClick={() => setSelectedBooking(row)}>Open</button>
-                    <button type="button" disabled={savingId === row.id} onClick={() => updateBookingStatus(row.id, 'Accepted')}>Accept</button>
-                    <button type="button" disabled={savingId === row.id} onClick={() => updateBookingStatus(row.id, 'Rejected')}>Reject</button>
-                    <button type="button" disabled={savingId === row.id} onClick={() => updateBookingStatus(row.id, 'Completed')}>Complete</button>
-                    <button type="button" disabled={savingId === row.id} className="muted" onClick={() => updateBookingStatus(row.id, 'Cancelled')}>Cancel</button>
+                    <BookingStatusActionButtons
+                      status={row.status}
+                      saving={savingId === row.id}
+                      onStatusChange={(status) => updateBookingStatus(row.id, status)}
+                    />
                   </div>
                 </td>
               </tr>
@@ -218,10 +261,12 @@ function BookingDetailsModal({ booking, saving, onClose, onStatusChange }) {
         </div>
 
         <div className="booking-detail-actions">
-          <button type="button" disabled={saving} onClick={() => onStatusChange('Accepted')}>Accept Booking</button>
-          <button type="button" disabled={saving} className="danger" onClick={() => onStatusChange('Rejected')}>Reject</button>
-          <button type="button" disabled={saving} onClick={() => onStatusChange('Completed')}>Mark Completed</button>
-          <button type="button" disabled={saving} className="muted" onClick={() => onStatusChange('Cancelled')}>Cancel</button>
+          <BookingStatusActionButtons
+            status={booking.status}
+            saving={saving}
+            longLabels
+            onStatusChange={onStatusChange}
+          />
         </div>
       </div>
     </div>
