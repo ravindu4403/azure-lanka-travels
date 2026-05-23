@@ -57,7 +57,7 @@ export function BookingsTable() {
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
-            <tr><th>ID</th><th>Guest</th><th>Package</th><th>Date</th><th>People</th><th>Jeeps</th><th>Status</th><th>Contact</th><th>Actions</th></tr>
+            <tr><th>ID</th><th>Guest</th><th>Package</th><th>Date</th><th>People</th><th>Meals</th><th>Total</th><th>Status</th><th>Contact</th><th>Actions</th></tr>
           </thead>
           <tbody>
             {loading ? <LoadingRow /> : rows.map((row) => (
@@ -67,7 +67,13 @@ export function BookingsTable() {
                 <td>{row.package}</td>
                 <td>{row.date}</td>
                 <td>{row.people}<small>{row.adults || 0} adults · {row.children || 0} children</small></td>
-                <td>{row.jeeps}</td>
+                <td>
+                  {Array.isArray(row.mealSelections) && row.mealSelections.length ? (
+                    <div className="booking-meal-list">{row.mealSelections.map((meal) => <small key={`${row.id}-${meal.id}`}>{meal.title} × {meal.persons}</small>)}</div>
+                  ) : <small>No meals</small>}
+                  <small>{row.jeeps} jeep(s)</small>
+                </td>
+                <td><strong>${Number(row.grandTotalUsd || row.safariPriceUsd || 0)}</strong><small>Meals: ${Number(row.mealTotalUsd || 0)}</small></td>
                 <td><span className={`admin-status ${String(row.status).toLowerCase()}`}>{row.status}</span></td>
                 <td><strong>{row.whatsapp || 'No WhatsApp'}</strong><small>{row.email}</small></td>
                 <td>
@@ -652,6 +658,190 @@ export function BlogCmsPanel() {
             <p>{blog.excerpt}</p>
             <small>/{blog.slug}</small>
             <div className="package-admin-actions"><button type="button" onClick={() => editBlog(blog)} disabled={saving}>Edit</button><button type="button" onClick={() => quickStatus(blog, blog.status === 'Published' ? 'Draft' : 'Published')} disabled={saving}>{blog.status === 'Published' ? 'Move Draft' : 'Publish'}</button><button type="button" className="danger" onClick={() => deleteBlog(blog)} disabled={saving}>Delete</button></div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const emptyMealPlanForm = {
+  id: '',
+  title: '',
+  badge: 'Meal Plan',
+  priceUsd: 8,
+  description: '',
+  imageUrl: '/images/animals/elephant.png',
+  visibility: 'Draft',
+  includesText: 'Water bottle\nFresh fruit\nSnack pack',
+};
+
+function mealPlanToForm(meal = {}) {
+  return {
+    id: meal.id || '',
+    title: meal.title || '',
+    badge: meal.badge || 'Meal Plan',
+    priceUsd: meal.priceUsd ?? 8,
+    description: meal.description || '',
+    imageUrl: meal.imageUrl || '/images/animals/elephant.png',
+    visibility: meal.visibility || 'Draft',
+    includesText: Array.isArray(meal.includes) && meal.includes.length ? meal.includes.join('\n') : 'Water bottle\nFresh fruit\nSnack pack',
+  };
+}
+
+function mealPlanPayload(form) {
+  return {
+    title: form.title,
+    badge: form.badge,
+    priceUsd: Number(form.priceUsd || 0),
+    description: form.description,
+    imageUrl: form.imageUrl,
+    visibility: form.visibility,
+    includes: form.includesText.split('\n').map((item) => item.trim()).filter(Boolean),
+  };
+}
+
+export function MealPlansPanel() {
+  const [rows, setRows] = useState([]);
+  const [form, setForm] = useState(emptyMealPlanForm);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const isEditing = Boolean(form.id);
+
+  async function loadMealPlans() {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/meal-plans', { cache: 'no-store' });
+      const result = await response.json();
+      if (result.success) setRows(result.mealPlans);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { loadMealPlans().catch(() => setLoading(false)); }, []);
+
+  function updateForm(event) {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  function editMealPlan(meal) {
+    setForm(mealPlanToForm(meal));
+    setMessage(`Editing ${meal.title}`);
+    setTimeout(() => document.getElementById('meal-plan-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
+  function resetForm() {
+    setForm(emptyMealPlanForm);
+    setMessage('');
+  }
+
+  async function saveMealPlan(event) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage('Saving meal plan...');
+    try {
+      const endpoint = isEditing ? `/api/meal-plans/${form.id}` : '/api/meal-plans';
+      const response = await fetch(endpoint, {
+        method: isEditing ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mealPlanPayload(form)),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Unable to save meal plan.');
+      await loadMealPlans();
+      setForm(emptyMealPlanForm);
+      setMessage(isEditing ? 'Meal plan updated. Published plans are visible in the booking flow.' : 'Meal plan created. Publish it to show in the booking flow.');
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function quickUpdate(meal, patch) {
+    setSaving(true);
+    setMessage('Updating meal plan...');
+    try {
+      const payload = mealPlanPayload(mealPlanToForm({ ...meal, ...patch }));
+      const response = await fetch(`/api/meal-plans/${meal.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Unable to update meal plan.');
+      setRows((items) => items.map((item) => item.id === meal.id ? result.mealPlan : item));
+      setMessage(`${result.mealPlan.title} is now ${result.mealPlan.visibility}.`);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteMealPlan(meal) {
+    if (!confirm(`Delete ${meal.title}?`)) return;
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/meal-plans/${meal.id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Unable to delete meal plan.');
+      setRows((items) => items.filter((item) => item.id !== meal.id));
+      if (form.id === meal.id) resetForm();
+      setMessage('Meal plan deleted.');
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="admin-panel-card meal-plan-cms-panel">
+      <div className="admin-card-heading">
+        <div>
+          <span>Meal Plan CMS</span>
+          <h2>Create beautiful add-on meal plans for safari bookings</h2>
+        </div>
+        <p className="admin-note">Published meal plans appear after the visitor taps Continue in the booking form. They can select one or more plans and choose person counts.</p>
+      </div>
+
+      <form id="meal-plan-editor" className="package-editor-form" onSubmit={saveMealPlan}>
+        <div className="package-editor-title">
+          <span>{isEditing ? 'Edit Meal Plan' : 'Create Meal Plan'}</span>
+          <h3>{isEditing ? form.title || 'Selected meal plan' : 'New meal plan'}</h3>
+        </div>
+        <label><span>Title</span><input name="title" value={form.title} onChange={updateForm} placeholder="Safari Breakfast Box" required /></label>
+        <label><span>Badge</span><input name="badge" value={form.badge} onChange={updateForm} placeholder="Morning Safari Favorite" /></label>
+        <label><span>Price USD per person</span><input name="priceUsd" type="number" min="0" value={form.priceUsd} onChange={updateForm} /></label>
+        <label><span>Visibility</span><select name="visibility" value={form.visibility} onChange={updateForm}><option>Draft</option><option>Published</option></select></label>
+        <label className="package-editor-full"><span>Photo URL / path</span><input name="imageUrl" value={form.imageUrl} onChange={updateForm} placeholder="/images/meals/breakfast.jpg or https://..." /></label>
+        <label className="package-editor-full"><span>Description</span><textarea name="description" value={form.description} onChange={updateForm} rows="3" placeholder="Short, attractive description for foreign tourists..." /></label>
+        <label className="package-editor-full"><span>Included items — one item per line</span><textarea name="includesText" value={form.includesText} onChange={updateForm} rows="5" /></label>
+        <div className="package-editor-actions">
+          <button className="admin-primary-btn" type="submit" disabled={saving}>{saving ? 'Saving...' : isEditing ? 'Update Meal Plan' : 'Create Meal Plan'}</button>
+          <button className="admin-ghost-btn" type="button" onClick={resetForm} disabled={saving}>Clear Form</button>
+        </div>
+        {message && <p className="package-cms-message">{message}</p>}
+      </form>
+
+      <div className="admin-edit-grid meal-plan-admin-grid">
+        {loading ? <p>Loading meal plans...</p> : rows.map((meal) => (
+          <article className="admin-edit-card meal-plan-admin-card" key={meal.id}>
+            <div className="gallery-thumb-real"><img src={meal.imageUrl || '/images/animals/elephant.png'} alt={meal.title} /></div>
+            <span className={`admin-status ${String(meal.visibility).toLowerCase()}`}>{meal.visibility}</span>
+            <h3>{meal.title}</h3>
+            <p>{meal.description}</p>
+            <strong>${Number(meal.priceUsd || 0)} per person</strong>
+            <small>{Array.isArray(meal.includes) ? meal.includes.join(' • ') : ''}</small>
+            <div className="package-admin-actions">
+              <button type="button" onClick={() => editMealPlan(meal)} disabled={saving}>Edit</button>
+              <button type="button" onClick={() => quickUpdate(meal, { visibility: meal.visibility === 'Published' ? 'Draft' : 'Published' })} disabled={saving}>{meal.visibility === 'Published' ? 'Move Draft' : 'Publish'}</button>
+              <button type="button" className="danger" onClick={() => deleteMealPlan(meal)} disabled={saving}>Delete</button>
+            </div>
           </article>
         ))}
       </div>

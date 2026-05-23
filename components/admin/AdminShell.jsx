@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { LayoutDashboard, CalendarCheck, GalleryHorizontalEnd, Star, PackageOpen, Globe2, Settings, Newspaper, Mail, Hotel } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck, GalleryHorizontalEnd, Star, PackageOpen, Globe2, Settings, Newspaper, Mail, Hotel, Utensils } from 'lucide-react';
 import AdminLogoutButton from '@/components/admin/AdminLogoutButton';
 
 const links = [
@@ -9,6 +9,7 @@ const links = [
   { href: '/admin/accommodation', label: 'Accommodation', icon: Hotel },
   { href: '/admin/contact-requests', label: 'Inquiries', icon: Mail },
   { href: '/admin/packages', label: 'Packages', icon: PackageOpen },
+  { href: '/admin/meal-plans', label: 'Meal Plans', icon: Utensils },
   { href: '/admin/gallery', label: 'Gallery', icon: GalleryHorizontalEnd },
   { href: '/admin/blog', label: 'Blog', icon: Newspaper },
   { href: '/admin/reviews', label: 'Reviews', icon: Star },
