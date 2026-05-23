@@ -1,6 +1,19 @@
 import Link from 'next/link';
 import { readCollection } from '@/lib/jsonDb';
 
+
+function isVideoMedia(url = '', type = '') {
+  return String(type).toLowerCase() === 'video' || /\.(mp4|webm|ogg|mov)$/i.test(String(url).split('?')[0]);
+}
+
+function PublicMedia({ item, className = '' }) {
+  const src = item.imageUrl || '/images/animals/leopard.png';
+  if (isVideoMedia(src, item.type)) {
+    return <video className={className} src={src} controls playsInline muted preload="metadata" />;
+  }
+  return <img className={className} src={src} alt={item.alt || item.title} loading="lazy" />;
+}
+
 const fallbackItems = [
   { imageUrl: '/images/animals/leopard.png', title: 'Leopard sightings', category: 'Wildlife', alt: 'Sri Lankan leopard in Yala National Park', caption: 'A rare big-cat moment that makes Yala unforgettable.' },
   { imageUrl: '/images/animals/elephant.png', title: 'Elephant encounters', category: 'Wildlife', alt: 'Asian elephant in Yala National Park', caption: 'Gentle giants, golden light, and peaceful waterhole scenes.' },
@@ -28,7 +41,7 @@ export default async function GalleryPreview() {
         {visibleItems.map((item, index) => (
           <article key={item.id || item.title} className={`safari-shot-card safari-shot-${index + 1}`}>
             <div className="safari-shot-bg" />
-            <img src={item.imageUrl || '/images/animals/leopard.png'} alt={item.alt || item.title} />
+            <PublicMedia item={item} />
             <div className="safari-shot-content">
               <small>{item.category || 'Safari Moment'}</small>
               <strong>{item.title}</strong>

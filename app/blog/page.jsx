@@ -5,6 +5,18 @@ import Footer from '@/components/Footer';
 import { readCollection } from '@/lib/jsonDb';
 import { getSiteSettings } from '@/lib/siteSettings';
 
+
+function isVideoMedia(url = '') {
+  return /\.(mp4|webm|ogg|mov)$/i.test(String(url).split('?')[0]);
+}
+
+function BlogMedia({ src, alt, className = '' }) {
+  if (isVideoMedia(src)) {
+    return <video className={className} src={src} controls playsInline muted preload="metadata" />;
+  }
+  return <img className={className} src={src} alt={alt} loading="lazy" />;
+}
+
 export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Yala Safari Travel Blog | Azure Lanka Travels',
@@ -30,7 +42,7 @@ export default async function BlogPage() {
               <article key={blog.id} className={`blog-preview-card blog-tone-${(index % 3) + 1}`}>
                 <Link className="blog-image-link" href={`/blog/${blog.slug}`}>
                   <div className="blog-card-image blog-fit-image">
-                    <img className="blog-fit-animal" src={blog.featuredImage || '/images/animals/leopard.png'} alt={blog.title} loading="lazy" />
+                    <BlogMedia className="blog-fit-animal" src={blog.featuredImage || '/images/animals/leopard.png'} alt={blog.title} />
                     <div className="blog-image-glow" />
                   </div>
                 </Link>

@@ -4,6 +4,19 @@ import Footer from '@/components/Footer';
 import { readCollection } from '@/lib/jsonDb';
 import { getSiteSettings } from '@/lib/siteSettings';
 
+
+function isVideoMedia(url = '', type = '') {
+  return String(type).toLowerCase() === 'video' || /\.(mp4|webm|ogg|mov)$/i.test(String(url).split('?')[0]);
+}
+
+function PublicMedia({ item }) {
+  const src = item.imageUrl || '/images/animals/leopard.png';
+  if (isVideoMedia(src, item.type)) {
+    return <video src={src} controls playsInline muted preload="metadata" />;
+  }
+  return <img src={src} alt={item.alt || item.title} loading="lazy" />;
+}
+
 export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Yala Safari Gallery | Azure Lanka Travels',
@@ -40,7 +53,7 @@ export default async function GalleryPage() {
             {visibleItems.map((item, index) => (
               <article key={item.id || item.title} className={`gallery-wall-card wall-card-${index + 1}`}>
                 <div className="wall-image-stage">
-                  <img src={item.imageUrl || '/images/animals/leopard.png'} alt={item.alt || item.title} />
+                  <PublicMedia item={item} />
                 </div>
                 <div className="wall-card-copy">
                   <small>{item.category || 'Safari Moment'}</small>

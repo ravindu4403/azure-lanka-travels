@@ -1,6 +1,19 @@
 import Link from 'next/link';
 import { readCollection } from '@/lib/jsonDb';
 
+
+function isVideoMedia(url = '') {
+  return /\.(mp4|webm|ogg|mov)$/i.test(String(url).split('?')[0]);
+}
+
+function BlogCoverMedia({ blog }) {
+  const src = blog.featuredImage || '/images/animals/leopard.png';
+  if (isVideoMedia(src)) {
+    return <video className="blog-fit-animal" src={src} controls playsInline muted preload="metadata" />;
+  }
+  return <img className="blog-fit-animal" src={src} alt={blog.title} loading="lazy" />;
+}
+
 export default async function BlogPreview() {
   const blogs = (await readCollection('blogs')).filter((blog) => blog.status === 'Published').slice(0, 3);
   if (!blogs.length) return null;
@@ -14,7 +27,7 @@ export default async function BlogPreview() {
           <article key={blog.id} className={`blog-preview-card blog-tone-${(index % 3) + 1}`}>
             <Link className="blog-image-link" href={`/blog/${blog.slug}`}>
               <div className="blog-card-image blog-fit-image">
-                <img className="blog-fit-animal" src={blog.featuredImage || '/images/animals/leopard.png'} alt={blog.title} loading="lazy" />
+                <BlogCoverMedia blog={blog} />
                 <div className="blog-image-glow" />
               </div>
             </Link>

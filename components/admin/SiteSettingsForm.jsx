@@ -2,6 +2,52 @@
 
 import { useState } from 'react';
 
+
+function SettingsMediaUploadField({ label, value, onPathChange }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+
+  async function handleUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadMessage('Uploading image...');
+    try {
+      const payload = new FormData();
+      payload.append('file', file);
+      payload.append('folder', 'settings');
+      const response = await fetch('/api/admin/upload', { method: 'POST', body: payload });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Upload failed.');
+      onPathChange(result.fileUrl);
+      setUploadMessage('Image uploaded successfully. Save settings to publish it.');
+    } catch (error) {
+      setUploadMessage(error.message);
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
+  }
+
+  return (
+    <div className="settings-editor-full admin-media-upload-field">
+      <div className="admin-media-label-row"><span>{label}</span><small>SEO / sharing image</small></div>
+      <div className="admin-media-upload-grid">
+        <label className="admin-file-drop-zone">
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} />
+          <strong>{uploading ? 'Uploading...' : 'Select image'}</strong>
+          <small>Upload from your computer or paste a path below.</small>
+        </label>
+        <div className="admin-upload-preview-box">
+          {value ? <img className="admin-upload-preview-media" src={value} alt={label} /> : <span>No image selected</span>}
+        </div>
+      </div>
+      <input value={value || ''} onChange={(event) => onPathChange(event.target.value)} placeholder="/uploads/images/settings/..." />
+      {uploadMessage ? <small className="admin-upload-message">{uploadMessage}</small> : null}
+    </div>
+  );
+}
+
 const fields = [
   { name: 'siteName', label: 'Website / Company Name', placeholder: 'Azure Lanka Travels' },
   { name: 'domain', label: 'Production Domain', placeholder: 'https://azurelankatravels.com' },
@@ -19,7 +65,6 @@ const fields = [
   { name: 'metaTitle', label: 'Default SEO Meta Title', placeholder: 'Azure Lanka Travels | Yala Safari Booking in Sri Lanka' },
   { name: 'metaDescription', label: 'Default SEO Meta Description', type: 'textarea', rows: 3, placeholder: 'Book premium Yala safari experiences...' },
   { name: 'seoKeywords', label: 'SEO Keywords', type: 'textarea', rows: 3, placeholder: 'Yala safari booking, Yala National Park safari...' },
-  { name: 'ogImage', label: 'Open Graph Image Path', placeholder: '/logos/azure-logo-light.png' },
   { name: 'footerCredit', label: 'Footer Credit', placeholder: 'Crafted by SPELLZZ' },
 ];
 
@@ -86,6 +131,12 @@ export default function SiteSettingsForm({ initialSettings }) {
             )}
           </label>
         ))}
+
+        <SettingsMediaUploadField
+          label="Open Graph Image"
+          value={form.ogImage || ''}
+          onPathChange={(value) => setForm((current) => ({ ...current, ogImage: value }))}
+        />
 
         <div className="settings-preview-card">
           <span>Live Preview</span>

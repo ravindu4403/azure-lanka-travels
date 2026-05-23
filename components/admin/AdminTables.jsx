@@ -7,6 +7,76 @@ function LoadingRow({ colSpan = 8 }) {
   return <tr><td colSpan={colSpan}>Loading latest records...</td></tr>;
 }
 
+function isVideoMedia(url = '', type = '') {
+  return String(type).toLowerCase() === 'video' || /\.(mp4|webm|ogg|mov)$/i.test(String(url).split('?')[0]);
+}
+
+function AdminMediaPreview({ src, type, alt = 'Uploaded media' }) {
+  if (!src) return null;
+  if (isVideoMedia(src, type)) {
+    return <video className="admin-upload-preview-media" src={src} controls playsInline muted />;
+  }
+  return <img className="admin-upload-preview-media" src={src} alt={alt} />;
+}
+
+function AdminMediaUploadField({
+  label = 'Media file',
+  value = '',
+  type = '',
+  folder = 'general',
+  accept = 'image/*,video/*',
+  onPathChange,
+  onUploaded,
+  hint = 'Choose a file from your computer or paste a path/URL.',
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+
+  async function handleFile(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadMessage('Uploading media...');
+    try {
+      const payload = new FormData();
+      payload.append('file', file);
+      payload.append('folder', folder);
+      const response = await fetch('/api/admin/upload', { method: 'POST', body: payload });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Upload failed.');
+      onUploaded?.(result.fileUrl, result.mediaType, result);
+      setUploadMessage(`${result.mediaType} uploaded successfully.`);
+    } catch (error) {
+      setUploadMessage(error.message);
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
+  }
+
+  return (
+    <div className="package-editor-full admin-media-upload-field">
+      <div className="admin-media-label-row">
+        <span>{label}</span>
+        {value ? <small>{isVideoMedia(value, type) ? 'Video preview enabled' : 'Image preview enabled'}</small> : null}
+      </div>
+      <div className="admin-media-upload-grid">
+        <label className="admin-file-drop-zone">
+          <input type="file" accept={accept} onChange={handleFile} disabled={uploading} />
+          <strong>{uploading ? 'Uploading...' : 'Select file'}</strong>
+          <small>{hint}</small>
+        </label>
+        <div className="admin-upload-preview-box">
+          {value ? <AdminMediaPreview src={value} type={type} alt={label} /> : <span>No media selected</span>}
+        </div>
+      </div>
+      <input value={value || ''} onChange={(event) => onPathChange?.(event.target.value)} placeholder="/uploads/images/... or https://..." />
+      {uploadMessage ? <small className="admin-upload-message">{uploadMessage}</small> : null}
+    </div>
+  );
+}
+
+
 export function BookingsTable() {
   const [rows, setRows] = useState(bookingRows);
   const [loading, setLoading] = useState(true);
@@ -501,7 +571,16 @@ export function GalleryTable() {
         <label><span>Category</span><select name="category" value={form.category} onChange={updateForm}><option>Wildlife</option><option>Safari Moments</option><option>Customer Photos</option><option>Landscapes</option><option>Videos</option></select></label>
         <label><span>Status</span><select name="status" value={form.status} onChange={updateForm}><option>Pending Approval</option><option>Published</option><option>Rejected</option></select></label>
         <label><span>Type</span><select name="type" value={form.type} onChange={updateForm}><option>Image</option><option>Video</option></select></label>
-        <label className="package-editor-full"><span>Image / video URL</span><input name="imageUrl" value={form.imageUrl} onChange={updateForm} placeholder="/images/animals/leopard.png or https://..." /></label>
+        <AdminMediaUploadField
+          label="Image / video file"
+          value={form.imageUrl}
+          type={form.type}
+          folder="gallery"
+          accept="image/*,video/*"
+          onPathChange={(value) => setForm((current) => ({ ...current, imageUrl: value }))}
+          onUploaded={(fileUrl, mediaType) => setForm((current) => ({ ...current, imageUrl: fileUrl, type: mediaType }))}
+          hint="Upload gallery photos or videos. Videos will play on the public website."
+        />
         <label className="package-editor-full"><span>Alt text for SEO</span><input name="alt" value={form.alt} onChange={updateForm} placeholder="Sri Lankan leopard sighting in Yala National Park" /></label>
         <label className="package-editor-full"><span>Caption</span><textarea name="caption" value={form.caption} onChange={updateForm} rows="3" placeholder="Short story or context for this safari moment..." /></label>
         <div className="package-editor-actions">
@@ -514,7 +593,7 @@ export function GalleryTable() {
       <div className="admin-edit-grid gallery-admin-grid">
         {loading ? <p>Loading latest gallery...</p> : rows.map((item) => (
           <article className="admin-edit-card gallery-admin-card" key={item.id || item.title}>
-            <div className="gallery-thumb-real"><img src={item.imageUrl || '/images/animals/elephant.png'} alt={item.alt || item.title} /></div>
+            <div className="gallery-thumb-real"><AdminMediaPreview src={item.imageUrl || '/images/animals/elephant.png'} type={item.type} alt={item.alt || item.title} /></div>
             <span className={`admin-status ${String(item.status).toLowerCase().replaceAll(' ', '-')}`}>{item.status}</span>
             <h3>{item.title}</h3>
             <p>{item.category}</p>
@@ -642,7 +721,15 @@ export function BlogCmsPanel() {
         <label><span>Slug</span><input name="slug" value={form.slug} onChange={updateForm} placeholder="best-time-to-book-yala-safari" /></label>
         <label><span>Category</span><select name="category" value={form.category} onChange={updateForm}><option>Safari guides</option><option>Travel tips</option><option>Wildlife education</option><option>Sri Lanka tourism</option></select></label>
         <label><span>Status</span><select name="status" value={form.status} onChange={updateForm}><option>Draft</option><option>Published</option></select></label>
-        <label className="package-editor-full"><span>Featured image URL</span><input name="featuredImage" value={form.featuredImage} onChange={updateForm} /></label>
+        <AdminMediaUploadField
+          label="Featured image / video"
+          value={form.featuredImage}
+          folder="blog"
+          accept="image/*,video/*"
+          onPathChange={(value) => setForm((current) => ({ ...current, featuredImage: value }))}
+          onUploaded={(fileUrl) => setForm((current) => ({ ...current, featuredImage: fileUrl }))}
+          hint="Upload a blog cover image. Video files will also preview/play where supported."
+        />
         <label className="package-editor-full"><span>Excerpt</span><textarea name="excerpt" value={form.excerpt} onChange={updateForm} rows="3" /></label>
         <label className="package-editor-full"><span>Article content</span><textarea name="content" value={form.content} onChange={updateForm} rows="8" /></label>
         <label className="package-editor-full"><span>SEO meta title</span><input name="metaTitle" value={form.metaTitle} onChange={updateForm} /></label>
@@ -653,6 +740,7 @@ export function BlogCmsPanel() {
       <div className="admin-edit-grid blog-admin-grid">
         {loading ? <p>Loading blog posts...</p> : rows.map((blog) => (
           <article className="admin-edit-card blog-admin-card" key={blog.id}>
+            <div className="gallery-thumb-real"><AdminMediaPreview src={blog.featuredImage || '/images/animals/leopard.png'} alt={blog.title} /></div>
             <span className={`admin-status ${String(blog.status).toLowerCase()}`}>{blog.status}</span>
             <h3>{blog.title}</h3>
             <p>{blog.excerpt}</p>
@@ -818,7 +906,15 @@ export function MealPlansPanel() {
         <label><span>Badge</span><input name="badge" value={form.badge} onChange={updateForm} placeholder="Morning Safari Favorite" /></label>
         <label><span>Price USD per person</span><input name="priceUsd" type="number" min="0" value={form.priceUsd} onChange={updateForm} /></label>
         <label><span>Visibility</span><select name="visibility" value={form.visibility} onChange={updateForm}><option>Draft</option><option>Published</option></select></label>
-        <label className="package-editor-full"><span>Photo URL / path</span><input name="imageUrl" value={form.imageUrl} onChange={updateForm} placeholder="/images/meals/breakfast.jpg or https://..." /></label>
+        <AdminMediaUploadField
+          label="Meal photo"
+          value={form.imageUrl}
+          folder="meals"
+          accept="image/*"
+          onPathChange={(value) => setForm((current) => ({ ...current, imageUrl: value }))}
+          onUploaded={(fileUrl) => setForm((current) => ({ ...current, imageUrl: fileUrl }))}
+          hint="Upload a beautiful meal photo from your computer."
+        />
         <label className="package-editor-full"><span>Description</span><textarea name="description" value={form.description} onChange={updateForm} rows="3" placeholder="Short, attractive description for foreign tourists..." /></label>
         <label className="package-editor-full"><span>Included items — one item per line</span><textarea name="includesText" value={form.includesText} onChange={updateForm} rows="5" /></label>
         <div className="package-editor-actions">
@@ -831,7 +927,7 @@ export function MealPlansPanel() {
       <div className="admin-edit-grid meal-plan-admin-grid">
         {loading ? <p>Loading meal plans...</p> : rows.map((meal) => (
           <article className="admin-edit-card meal-plan-admin-card" key={meal.id}>
-            <div className="gallery-thumb-real"><img src={meal.imageUrl || '/images/animals/elephant.png'} alt={meal.title} /></div>
+            <div className="gallery-thumb-real"><AdminMediaPreview src={meal.imageUrl || '/images/animals/elephant.png'} alt={meal.title} /></div>
             <span className={`admin-status ${String(meal.visibility).toLowerCase()}`}>{meal.visibility}</span>
             <h3>{meal.title}</h3>
             <p>{meal.description}</p>

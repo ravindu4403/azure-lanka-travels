@@ -5,6 +5,18 @@ import Footer from '@/components/Footer';
 import { readCollection } from '@/lib/jsonDb';
 import { getSiteSettings } from '@/lib/siteSettings';
 
+
+function isVideoMedia(url = '') {
+  return /\.(mp4|webm|ogg|mov)$/i.test(String(url).split('?')[0]);
+}
+
+function BlogMedia({ src, alt, className = '' }) {
+  if (isVideoMedia(src)) {
+    return <video className={className} src={src} controls playsInline muted preload="metadata" />;
+  }
+  return <img className={className} src={src} alt={alt} loading="lazy" />;
+}
+
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }) {
   const blogs = await readCollection('blogs');
@@ -32,7 +44,7 @@ export default async function BlogDetailPage({ params }) {
           <span className="small-label">{blog.category}</span>
           <h1>{blog.title}</h1>
           <p className="section-lead">{blog.excerpt}</p>
-          <div className="blog-hero-image"><img src={blog.featuredImage || '/images/animals/leopard.png'} alt={blog.title} /></div>
+          <div className="blog-hero-image"><BlogMedia src={blog.featuredImage || '/images/animals/leopard.png'} alt={blog.title} /></div>
           <div className="blog-content">
             {paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
           </div>
