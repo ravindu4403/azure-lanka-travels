@@ -44,8 +44,9 @@ function AdminMediaUploadField({
       const response = await fetch('/api/admin/upload', { method: 'POST', body: payload });
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.message || 'Upload failed.');
+      onPathChange?.(result.fileUrl);
       onUploaded?.(result.fileUrl, result.mediaType, result);
-      setUploadMessage(`${result.mediaType} uploaded successfully.`);
+      setUploadMessage(`${result.mediaType} uploaded successfully. Preview updated.`);
     } catch (error) {
       setUploadMessage(error.message);
     } finally {
@@ -826,6 +827,34 @@ export function MealPlansPanel() {
     setMessage('');
   }
 
+  async function handleMealImageUploaded(fileUrl) {
+    setForm((current) => ({ ...current, imageUrl: fileUrl }));
+    if (!isEditing) {
+      setMessage('Photo uploaded. Complete the details and click Create Meal Plan.');
+      return;
+    }
+
+    setSaving(true);
+    setMessage('Photo uploaded. Updating meal plan image...');
+    try {
+      const payload = mealPlanPayload({ ...form, imageUrl: fileUrl });
+      const response = await fetch(`/api/meal-plans/${form.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Unable to update meal plan image.');
+      await loadMealPlans();
+      setForm(mealPlanToForm(result.mealPlan));
+      setMessage('Meal photo uploaded and saved successfully.');
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function saveMealPlan(event) {
     event.preventDefault();
     setSaving(true);
@@ -912,7 +941,7 @@ export function MealPlansPanel() {
           folder="meals"
           accept="image/*"
           onPathChange={(value) => setForm((current) => ({ ...current, imageUrl: value }))}
-          onUploaded={(fileUrl) => setForm((current) => ({ ...current, imageUrl: fileUrl }))}
+          onUploaded={(fileUrl) => handleMealImageUploaded(fileUrl)}
           hint="Upload a beautiful meal photo from your computer."
         />
         <label className="package-editor-full"><span>Description</span><textarea name="description" value={form.description} onChange={updateForm} rows="3" placeholder="Short, attractive description for foreign tourists..." /></label>
