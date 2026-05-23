@@ -131,7 +131,7 @@ export default function BookingForm({ settings }) {
     return mealPlans
       .filter((meal) => selectedMeals[meal.id]?.selected)
       .map((meal) => {
-        const persons = Math.max(1, Number(selectedMeals[meal.id]?.persons || totalGuests || 1));
+        const persons = Math.max(0, Number(selectedMeals[meal.id]?.persons ?? 0));
         const priceUsd = Math.max(0, Number(meal.priceUsd || 0));
         return {
           id: meal.id,
@@ -192,10 +192,10 @@ export default function BookingForm({ settings }) {
 
   function toggleMeal(meal) {
     setSelectedMeals((current) => {
-      const existing = current[meal.id] || { selected: false, persons: totalGuests || 1 };
+      const existing = current[meal.id] || { selected: false, persons: 0 };
       return {
         ...current,
-        [meal.id]: { ...existing, selected: !existing.selected, persons: existing.persons || totalGuests || 1 },
+        [meal.id]: { ...existing, selected: !existing.selected, persons: Number(existing.persons ?? 0) },
       };
     });
   }
@@ -203,7 +203,7 @@ export default function BookingForm({ settings }) {
   function updateMealPersons(mealId, value) {
     setSelectedMeals((current) => ({
       ...current,
-      [mealId]: { ...(current[mealId] || { selected: true }), selected: true, persons: Math.max(1, Number(value || 1)) },
+      [mealId]: { ...(current[mealId] || { selected: true }), selected: true, persons: Math.max(0, Number(value || 0)) },
     }));
   }
 
@@ -349,7 +349,7 @@ export default function BookingForm({ settings }) {
             <div className="meal-plan-grid-public">
               {mealPlans.map((meal) => {
                 const selected = Boolean(selectedMeals[meal.id]?.selected);
-                const persons = selectedMeals[meal.id]?.persons || totalGuests || 1;
+                const persons = selectedMeals[meal.id]?.persons ?? 0;
                 return (
                   <article className={`meal-plan-public-card ${selected ? 'selected' : ''}`} key={meal.id}>
                     <button type="button" className="meal-toggle-cover" onClick={() => toggleMeal(meal)} aria-label={`Select ${meal.title}`} />
@@ -365,7 +365,7 @@ export default function BookingForm({ settings }) {
                     </div>
                     <label className={`meal-person-count ${selected ? 'active' : ''}`}>
                       <span>Persons</span>
-                      <input type="number" min="1" value={persons} onChange={(event) => updateMealPersons(meal.id, event.target.value)} disabled={!selected} />
+                      <input type="number" min="0" value={persons} onChange={(event) => updateMealPersons(meal.id, event.target.value)} disabled={!selected} />
                     </label>
                   </article>
                 );
