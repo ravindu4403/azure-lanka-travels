@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { bookingRows, packageRows, galleryRows } from '@/data/adminData';
 
-function LoadingRow({ colSpan = 8 }) {
+function LoadingRow({ colSpan = 10 }) {
   return <tr><td colSpan={colSpan}>Loading latest records...</td></tr>;
 }
 
@@ -46,7 +46,7 @@ function AdminMediaUploadField({
       if (!response.ok || !result.success) throw new Error(result.message || 'Upload failed.');
       onPathChange?.(result.fileUrl);
       onUploaded?.(result.fileUrl, result.mediaType, result);
-      setUploadMessage(`${result.mediaType} uploaded successfully. Preview updated.`);
+      setUploadMessage(result.message || `${result.mediaType} uploaded successfully. Preview updated.`);
     } catch (error) {
       setUploadMessage(error.message);
     } finally {
@@ -82,6 +82,7 @@ export function BookingsTable() {
   const [rows, setRows] = useState(bookingRows);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   const updateBookingStatus = async (id, status) => {
     setSavingId(id);
@@ -94,6 +95,7 @@ export function BookingsTable() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Unable to update booking status.');
       setRows((items) => items.map((booking) => booking.id === id ? result.booking : booking));
+      setSelectedBooking((current) => current?.id === id ? result.booking : current);
     } catch (error) {
       alert(error.message);
     } finally {
@@ -149,6 +151,7 @@ export function BookingsTable() {
                 <td><strong>{row.whatsapp || 'No WhatsApp'}</strong><small>{row.email}</small></td>
                 <td>
                   <div className="booking-admin-actions">
+                    <button type="button" className="view" onClick={() => setSelectedBooking(row)}>Open</button>
                     <button type="button" disabled={savingId === row.id} onClick={() => updateBookingStatus(row.id, 'Accepted')}>Accept</button>
                     <button type="button" disabled={savingId === row.id} onClick={() => updateBookingStatus(row.id, 'Rejected')}>Reject</button>
                     <button type="button" disabled={savingId === row.id} onClick={() => updateBookingStatus(row.id, 'Completed')}>Complete</button>
@@ -160,7 +163,68 @@ export function BookingsTable() {
           </tbody>
         </table>
       </div>
+
+      {selectedBooking ? (
+        <BookingDetailsModal
+          booking={selectedBooking}
+          saving={savingId === selectedBooking.id}
+          onClose={() => setSelectedBooking(null)}
+          onStatusChange={(status) => updateBookingStatus(selectedBooking.id, status)}
+        />
+      ) : null}
     </section>
+  );
+}
+
+function BookingDetailsModal({ booking, saving, onClose, onStatusChange }) {
+  const meals = Array.isArray(booking.mealSelections) ? booking.mealSelections : [];
+  const submitted = booking.submittedAt ? new Date(booking.submittedAt).toLocaleString() : 'Not available';
+  return (
+    <div className="booking-detail-overlay" role="dialog" aria-modal="true" aria-label="Booking details">
+      <div className="booking-detail-modal">
+        <div className="booking-detail-header">
+          <div>
+            <span>Booking Request</span>
+            <h3>{booking.id}</h3>
+            <p>{booking.package} • {booking.date}</p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close booking details">×</button>
+        </div>
+
+        <div className="booking-detail-status-line">
+          <span className={`admin-status ${String(booking.status).toLowerCase()}`}>{booking.status}</span>
+          <strong>Grand Total: ${Number(booking.grandTotalUsd || booking.safariPriceUsd || 0)}</strong>
+        </div>
+
+        <div className="booking-detail-grid">
+          <article><span>Guest Name</span><strong>{booking.guest}</strong><small>{booking.country}</small></article>
+          <article><span>Contact</span><strong>{booking.whatsapp || 'No WhatsApp'}</strong><small>{booking.email}</small></article>
+          <article><span>People</span><strong>{booking.people || 0} guests</strong><small>{booking.adults || 0} adults • {booking.children || 0} children</small></article>
+          <article><span>Jeep Count</span><strong>{booking.jeeps || 1}</strong><small>Maximum 6 guests per jeep</small></article>
+          <article><span>Safari Price</span><strong>${Number(booking.safariPriceUsd || 0)}</strong><small>USD</small></article>
+          <article><span>Meal Total</span><strong>${Number(booking.mealTotalUsd || 0)}</strong><small>{meals.length ? `${meals.length} selected meal plan(s)` : 'No meals selected'}</small></article>
+          <article><span>Submitted</span><strong>{submitted}</strong><small>Website booking form</small></article>
+          <article><span>Note / Pickup</span><strong>{booking.note || 'No special request'}</strong><small>Customer request</small></article>
+        </div>
+
+        <div className="booking-detail-meals">
+          <span>Selected Meal Plans</span>
+          {meals.length ? meals.map((meal) => (
+            <div className="booking-detail-meal-row" key={`${booking.id}-${meal.id}`}>
+              <strong>{meal.title}</strong>
+              <small>{meal.persons} person(s) × ${Number(meal.priceUsd || 0)} = ${Number(meal.lineTotalUsd || 0)}</small>
+            </div>
+          )) : <p>No meal plans selected for this safari booking.</p>}
+        </div>
+
+        <div className="booking-detail-actions">
+          <button type="button" disabled={saving} onClick={() => onStatusChange('Accepted')}>Accept Booking</button>
+          <button type="button" disabled={saving} className="danger" onClick={() => onStatusChange('Rejected')}>Reject</button>
+          <button type="button" disabled={saving} onClick={() => onStatusChange('Completed')}>Mark Completed</button>
+          <button type="button" disabled={saving} className="muted" onClick={() => onStatusChange('Cancelled')}>Cancel</button>
+        </div>
+      </div>
+    </div>
   );
 }
 

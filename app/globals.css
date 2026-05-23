@@ -5248,3 +5248,203 @@ body.meal-modal-open .sticky-whatsapp {
     min-height: 210px;
   }
 }
+
+/* Phase 26 — booking detail modal + upload fallback visibility */
+.booking-admin-actions button.view {
+  background: var(--gold-deep);
+  color: #092515;
+}
+.booking-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(6, 18, 12, .48);
+  backdrop-filter: blur(10px);
+  display: grid;
+  place-items: center;
+  padding: 22px;
+}
+.booking-detail-modal {
+  width: min(980px, 100%);
+  max-height: min(860px, calc(100dvh - 44px));
+  overflow: auto;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 85% 8%, rgba(214,181,82,.13), transparent 26%),
+    linear-gradient(135deg, #ffffff 0%, #f7f7f1 100%);
+  border: 1px solid rgba(46,107,54,.18);
+  box-shadow: 0 34px 90px rgba(0,0,0,.25);
+  padding: clamp(22px, 3vw, 34px);
+}
+.booking-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.booking-detail-header span,
+.booking-detail-meals > span {
+  color: var(--gold-deep);
+  font-size: .76rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.booking-detail-header h3 {
+  margin: 7px 0 4px;
+  color: var(--green-900);
+  font-family: Poppins, sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -.04em;
+}
+.booking-detail-header p {
+  margin: 0;
+  color: #55625a;
+  font-weight: 900;
+}
+.booking-detail-header button {
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: 50%;
+  background: #0b3a22;
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.booking-detail-status-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-radius: 22px;
+  background: #0d321e;
+  color: #fff;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.booking-detail-status-line strong {
+  font-family: Poppins, sans-serif;
+  font-size: 1.2rem;
+}
+.booking-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.booking-detail-grid article {
+  min-height: 120px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.82);
+  border: 1px solid rgba(46,107,54,.13);
+  padding: 16px;
+  display: grid;
+  align-content: start;
+  gap: 7px;
+}
+.booking-detail-grid span {
+  color: var(--gold-deep);
+  font-size: .68rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.booking-detail-grid strong {
+  color: var(--green-900);
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+.booking-detail-grid small {
+  color: #5c675f;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.booking-detail-meals {
+  margin-top: 18px;
+  border-radius: 24px;
+  background: rgba(214,181,82,.10);
+  border: 1px solid rgba(214,181,82,.22);
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+.booking-detail-meals p {
+  margin: 0;
+  color: #536058;
+  font-weight: 850;
+}
+.booking-detail-meal-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.75);
+  padding: 13px 14px;
+}
+.booking-detail-meal-row strong {
+  color: var(--green-900);
+}
+.booking-detail-meal-row small {
+  color: #4e5d54;
+  font-weight: 850;
+}
+.booking-detail-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+.booking-detail-actions button {
+  border: 0;
+  border-radius: 999px;
+  padding: 15px 16px;
+  background: var(--green-900);
+  color: #fff;
+  font-weight: 950;
+  cursor: pointer;
+}
+.booking-detail-actions button.danger {
+  background: #b42318;
+}
+.booking-detail-actions button.muted {
+  background: #6b7280;
+}
+.booking-detail-actions button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+.admin-upload-message {
+  display: block;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .booking-detail-overlay {
+    align-items: center;
+    padding: 14px;
+  }
+  .booking-detail-modal {
+    max-height: calc(100dvh - 28px);
+    border-radius: 28px;
+    padding: 18px;
+  }
+  .booking-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .booking-detail-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .booking-detail-grid,
+  .booking-detail-actions {
+    grid-template-columns: 1fr;
+  }
+  .booking-detail-meal-row {
+    display: grid;
+  }
+}

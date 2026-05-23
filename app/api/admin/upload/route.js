@@ -37,23 +37,41 @@ export async function POST(request) {
     const isVideo = videoTypes.includes(file.type);
     const rootFolder = isVideo ? 'videos' : 'images';
     const folder = requestedFolder && /^[a-z0-9-]+$/.test(requestedFolder) ? `${rootFolder}/${requestedFolder}` : rootFolder;
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
-    await mkdir(uploadDir, { recursive: true });
-
     const fileName = cleanName(file.name);
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const filePath = path.join(uploadDir, fileName);
-    await writeFile(filePath, buffer);
 
-    const publicUrl = `/uploads/${folder}/${fileName}`.replaceAll('\\', '/');
-    return NextResponse.json({
-      success: true,
-      fileUrl: publicUrl,
-      mediaType: isVideo ? 'Video' : 'Image',
-      fileName,
-      size: file.size,
-    });
+    try {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
+      await mkdir(uploadDir, { recursive: true });
+      const filePath = path.join(uploadDir, fileName);
+      await writeFile(filePath, buffer);
+
+      const publicUrl = `/uploads/${folder}/${fileName}`.replaceAll('\\', '/');
+      return NextResponse.json({
+        success: true,
+        fileUrl: publicUrl,
+        mediaType: isVideo ? 'Video' : 'Image',
+        fileName,
+        size: file.size,
+        storage: 'public-folder',
+      });
+    } catch (writeError) {
+      // Some preview hosts like Vercel/Netlify run serverless functions on a read-only filesystem.
+      // In that case we return a data URL so the admin preview and JSON database can still save/display the media.
+      // cPanel Node or local XAMPP normally uses the public/uploads folder above.
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${file.type};base64,${base64}`;
+      return NextResponse.json({
+        success: true,
+        fileUrl: dataUrl,
+        mediaType: isVideo ? 'Video' : 'Image',
+        fileName,
+        size: file.size,
+        storage: 'database-data-url-fallback',
+        message: `Preview/server storage is read-only, so media was saved as embedded data. Original write error: ${writeError.message}`,
+      });
+    }
   } catch (error) {
     return NextResponse.json({ success: false, message: error.message || 'Upload failed.' }, { status: 500 });
   }
