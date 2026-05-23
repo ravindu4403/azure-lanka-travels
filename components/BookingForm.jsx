@@ -107,6 +107,12 @@ export default function BookingForm({ settings }) {
     };
   }, []);
 
+  useEffect(() => {
+    const isOpen = step === 'meal-choice';
+    document.body.classList.toggle('meal-modal-open', isOpen);
+    return () => document.body.classList.remove('meal-modal-open');
+  }, [step]);
+
   const totalGuests = Math.max(0, Number(form.adults || 0)) + Math.max(0, Number(form.children || 0));
   const jeepCount = Math.max(1, Math.ceil(totalGuests / 6));
   const selectedSafariPackage = safariPackages.find((pkg) => pkg.title === form.safariType) || safariPackages[0] || fallbackSafariTypes[0];
