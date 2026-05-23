@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const fallbackSafariTypes = [
   { title: 'Full-Day Yala Safari', price: '$120' },
@@ -58,6 +58,7 @@ export default function BookingForm({ settings }) {
   const [step, setStep] = useState('details');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
   const [bookingId, setBookingId] = useState('');
+  const mealSelectRef = useRef(null);
 
   useEffect(() => {
     let ignore = false;
@@ -111,6 +112,14 @@ export default function BookingForm({ settings }) {
     const isOpen = step === 'meal-choice';
     document.body.classList.toggle('meal-modal-open', isOpen);
     return () => document.body.classList.remove('meal-modal-open');
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== 'meal-select') return;
+    const timer = window.setTimeout(() => {
+      mealSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => window.clearTimeout(timer);
   }, [step]);
 
   const totalGuests = Math.max(0, Number(form.adults || 0)) + Math.max(0, Number(form.children || 0));
@@ -332,7 +341,7 @@ export default function BookingForm({ settings }) {
         )}
 
         {step === 'meal-select' && (
-          <div className="booking-form mobile-card meal-select-panel">
+          <div ref={mealSelectRef} className="booking-form mobile-card meal-select-panel">
             <div className="booking-form-head">
               <span>Meal Plan Selection</span>
               <strong>Select one or more meal plans</strong>
@@ -346,9 +355,9 @@ export default function BookingForm({ settings }) {
                     <button type="button" className="meal-toggle-cover" onClick={() => toggleMeal(meal)} aria-label={`Select ${meal.title}`} />
                     <div className="meal-card-image">
                       <img src={meal.imageUrl || '/images/animals/elephant.png'} alt={meal.title} />
-                      <span className="meal-card-check">{selected ? '✓ Selected' : 'Tap to select'}</span>
                     </div>
                     <div className="meal-card-content">
+                      <span className="meal-card-check">{selected ? '✓ Selected' : 'Tap card to select'}</span>
                       <span>{meal.badge || 'Meal Plan'}</span>
                       <h3>{meal.title}</h3>
                       <p>{meal.description}</p>

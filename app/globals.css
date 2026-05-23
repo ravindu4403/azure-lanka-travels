@@ -5013,3 +5013,93 @@ body.meal-modal-open .sticky-whatsapp {
     font-size: .88rem !important;
   }
 }
+
+/* Phase 21 — mobile meal selector UX fix */
+.meal-select-panel {
+  scroll-margin-top: 96px;
+}
+.meal-card-image {
+  overflow: hidden !important;
+}
+.meal-card-check {
+  position: static !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 6px !important;
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  background: rgba(214,181,82,.18) !important;
+  border: 1px solid rgba(214,181,82,.42) !important;
+  color: var(--gold) !important;
+  box-shadow: none !important;
+  font-size: .66rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+.meal-plan-public-card.selected .meal-card-check {
+  background: var(--gold) !important;
+  color: #092515 !important;
+  border-color: var(--gold) !important;
+}
+
+@media (max-width: 900px) {
+  .meal-select-panel {
+    scroll-margin-top: 18px;
+  }
+  .meal-plan-public-card {
+    grid-template-columns: 136px 1fr !important;
+    gap: 14px !important;
+    padding: 13px !important;
+    align-items: center !important;
+  }
+  .meal-card-image {
+    width: 136px !important;
+    height: 136px !important;
+    border-width: 5px !important;
+    grid-row: span 2;
+  }
+  .meal-card-content {
+    align-self: center !important;
+    gap: 5px !important;
+  }
+  .meal-card-check {
+    font-size: .56rem !important;
+    padding: 6px 9px !important;
+    margin-bottom: 4px !important;
+  }
+  .meal-person-count {
+    grid-column: 2 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .meal-plan-public-card {
+    grid-template-columns: 122px 1fr !important;
+    gap: 12px !important;
+  }
+  .meal-card-image {
+    width: 122px !important;
+    height: 122px !important;
+  }
+  .meal-card-content h3,
+  .meal-plan-public-card h3 {
+    font-size: .98rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .meal-plan-public-card {
+    grid-template-columns: 112px 1fr !important;
+  }
+  .meal-card-image {
+    width: 112px !important;
+    height: 112px !important;
+  }
+}
