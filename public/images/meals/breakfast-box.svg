@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f8f1dc"/><stop offset="1" stop-color="#e8f2e8"/></linearGradient></defs>
+  <rect width="900" height="620" fill="url(#g)"/>
+  <circle cx="740" cy="120" r="120" fill="#d6b552" opacity=".25"/>
+  <rect x="150" y="150" width="600" height="330" rx="44" fill="#0d351f"/>
+  <rect x="190" y="190" width="220" height="130" rx="24" fill="#fff4d5"/>
+  <rect x="450" y="190" width="260" height="130" rx="24" fill="#ffffff"/>
+  <circle cx="565" cy="255" r="42" fill="#f7cf6b"/>
+  <circle cx="635" cy="255" r="42" fill="#e9885f"/>
+  <rect x="205" y="360" width="490" height="55" rx="27" fill="#d6b552"/>
+  <text x="450" y="545" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="800" fill="#0d351f">Safari Breakfast Box</text>
+</svg>

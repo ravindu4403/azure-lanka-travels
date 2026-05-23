@@ -5,7 +5,7 @@
     "badge": "Morning Safari Favorite",
     "priceUsd": 8,
     "description": "A fresh breakfast box prepared for early morning safari guests with simple, travel-friendly food and bottled water.",
-    "imageUrl": "/images/animals/elephant.png",
+    "imageUrl": "/images/meals/breakfast-box.svg",
     "visibility": "Published",
     "includes": [
       "Sandwich or bun",
@@ -20,7 +20,7 @@
     "badge": "Full-Day Safari Choice",
     "priceUsd": 12,
     "description": "A convenient lunch pack for full-day safari travelers who want to stay comfortable inside the park.",
-    "imageUrl": "/images/animals/leopard.png",
+    "imageUrl": "/images/meals/lunch-pack.svg",
     "visibility": "Published",
     "includes": [
       "Rice or light meal",
@@ -35,7 +35,7 @@
     "badge": "Family Friendly",
     "priceUsd": 6,
     "description": "A simple child-friendly meal option for families traveling with children.",
-    "imageUrl": "/images/animals/deer.png",
+    "imageUrl": "/images/meals/kids-meal.svg",
     "visibility": "Published",
     "includes": [
       "Mini sandwich",

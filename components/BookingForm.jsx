@@ -16,7 +16,7 @@ const fallbackMealPlans = [
     badge: 'Morning Safari Favorite',
     priceUsd: 8,
     description: 'A fresh breakfast box prepared for early morning safari guests.',
-    imageUrl: '/images/animals/elephant.png',
+    imageUrl: '/images/meals/breakfast-box.svg',
     visibility: 'Published',
     includes: ['Sandwich or bun', 'Fresh fruit', 'Water bottle', 'Snack pack'],
   },
@@ -26,7 +26,7 @@ const fallbackMealPlans = [
     badge: 'Full-Day Safari Choice',
     priceUsd: 12,
     description: 'A convenient lunch pack for full-day safari travelers.',
-    imageUrl: '/images/animals/leopard.png',
+    imageUrl: '/images/meals/lunch-pack.svg',
     visibility: 'Published',
     includes: ['Rice or light meal', 'Fruit', 'Water bottle', 'Sweet snack'],
   },
@@ -309,18 +309,19 @@ export default function BookingForm({ settings }) {
         )}
 
         {step === 'meal-choice' && (
-          <div className="booking-form mobile-card meal-choice-card">
-            <div className="booking-form-head">
-              <span>Optional Meal Plan</span>
-              <strong>Do you want to add a meal plan?</strong>
+          <div className="meal-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="meal-choice-title">
+            <div className="meal-modal-card">
+              <div className="meal-modal-icon">🍱</div>
+              <span className="meal-modal-kicker">Optional Meal Plan</span>
+              <h3 id="meal-choice-title">Do you want to add a meal plan?</h3>
+              <p>You can skip meals and submit only the safari booking, or add one or more meal plans for selected person counts.</p>
+              <div className="meal-modal-actions">
+                <button type="button" className="meal-action-button" onClick={() => setStep('details')}>Back</button>
+                <button type="button" className="meal-action-button" onClick={() => submitBooking(false)}>No, Submit Safari Only</button>
+                <button type="button" className="meal-action-button primary" onClick={() => setStep('meal-select')}>Yes, Add Meal Plans</button>
+              </div>
+              {status.message && <p className={`form-status ${status.type}`}>{status.message}{bookingId ? ` Ref: ${bookingId}` : ''}</p>}
             </div>
-            <p className="meal-choice-copy">You can skip meals and submit only the safari booking, or add one or more meal plans for selected person counts.</p>
-            <div className="meal-choice-actions">
-              <button type="button" className="admin-ghost-btn" onClick={() => setStep('details')}>Back</button>
-              <button type="button" className="booking-submit muted-submit" onClick={() => submitBooking(false)}>No, Submit Safari Only</button>
-              <button type="button" className="booking-submit" onClick={() => setStep('meal-select')}>Yes, Add Meal Plans</button>
-            </div>
-            {status.message && <p className={`form-status ${status.type}`}>{status.message}{bookingId ? ` Ref: ${bookingId}` : ''}</p>}
           </div>
         )}
 
@@ -337,19 +338,20 @@ export default function BookingForm({ settings }) {
                 return (
                   <article className={`meal-plan-public-card ${selected ? 'selected' : ''}`} key={meal.id}>
                     <button type="button" className="meal-toggle-cover" onClick={() => toggleMeal(meal)} aria-label={`Select ${meal.title}`} />
-                    <img src={meal.imageUrl || '/images/animals/elephant.png'} alt={meal.title} />
-                    <div>
+                    <div className="meal-card-image">
+                      <img src={meal.imageUrl || '/images/animals/elephant.png'} alt={meal.title} />
+                      <span className="meal-card-check">{selected ? '✓ Selected' : 'Tap to select'}</span>
+                    </div>
+                    <div className="meal-card-content">
                       <span>{meal.badge || 'Meal Plan'}</span>
                       <h3>{meal.title}</h3>
                       <p>{meal.description}</p>
                       <strong>${Number(meal.priceUsd || 0)} per person</strong>
                     </div>
-                    {selected && (
-                      <label className="meal-person-count">
-                        <span>Persons</span>
-                        <input type="number" min="1" value={persons} onChange={(event) => updateMealPersons(meal.id, event.target.value)} />
-                      </label>
-                    )}
+                    <label className={`meal-person-count ${selected ? 'active' : ''}`}>
+                      <span>Persons</span>
+                      <input type="number" min="1" value={persons} onChange={(event) => updateMealPersons(meal.id, event.target.value)} disabled={!selected} />
+                    </label>
                   </article>
                 );
               })}

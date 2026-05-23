@@ -4495,3 +4495,321 @@ img { max-width: 100%; }
   .meal-plan-grid-public { grid-template-columns: 1fr; }
   .meal-plan-public-card img { height: 170px; }
 }
+
+/* Phase 18 — premium meal-plan modal + mobile-app meal selector */
+.meal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(214,181,82,.20), transparent 28%),
+    rgba(6, 20, 12, .46);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: mealOverlayIn .22s ease both;
+}
+.meal-modal-card {
+  width: min(620px, 100%);
+  border-radius: 34px;
+  border: 1px solid rgba(255,255,255,.42);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,247,240,.96));
+  box-shadow: 0 30px 90px rgba(0,0,0,.34);
+  padding: clamp(24px, 4vw, 38px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: mealModalIn .28s cubic-bezier(.2,.9,.2,1) both;
+}
+.meal-modal-card::before {
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 999px;
+  background: rgba(214,181,82,.14);
+  right: -100px;
+  top: -120px;
+}
+.meal-modal-card::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: rgba(46,107,54,.10);
+  left: -95px;
+  bottom: -115px;
+}
+.meal-modal-card > * {
+  position: relative;
+  z-index: 2;
+}
+.meal-modal-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  border-radius: 26px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #123b25, #092515);
+  box-shadow: 0 20px 36px rgba(9,37,21,.26);
+  font-size: 2rem;
+}
+.meal-modal-kicker {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--gold-deep);
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  font-size: .76rem;
+}
+.meal-modal-card h3 {
+  margin: 0 0 12px;
+  color: var(--green-900);
+  font-family: Poppins, sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.65rem);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+}
+.meal-modal-card p {
+  max-width: 500px;
+  margin: 0 auto 24px;
+  color: #4d5751;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.meal-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.meal-action-button {
+  min-height: 54px;
+  border: 0;
+  border-radius: 999px;
+  padding: 15px 18px;
+  background: #123b25;
+  color: #fff;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 14px 26px rgba(9,37,21,.18);
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.meal-action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 34px rgba(9,37,21,.24);
+}
+.meal-action-button.primary {
+  background: linear-gradient(145deg, #123b25, #0b2a18);
+  outline: 2px solid rgba(214,181,82,.42);
+}
+.meal-select-panel {
+  padding: clamp(18px, 2.5vw, 30px) !important;
+  border-radius: 34px !important;
+}
+.meal-select-panel .booking-form-head {
+  margin-bottom: 12px;
+}
+.meal-plan-grid-public {
+  gap: 18px !important;
+}
+.meal-plan-public-card {
+  border-radius: 28px !important;
+  padding: 12px !important;
+  gap: 12px !important;
+  background: rgba(255,255,255,.96) !important;
+  box-shadow: 0 18px 40px rgba(9,37,21,.10) !important;
+  border: 1px solid rgba(17,59,37,.12) !important;
+  min-height: 360px;
+}
+.meal-plan-public-card.selected {
+  border-color: rgba(214,181,82,.9) !important;
+  box-shadow: 0 24px 46px rgba(214,181,82,.18) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,250,234,.96)) !important;
+}
+.meal-card-image {
+  position: relative;
+  z-index: 3;
+  height: 150px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #f8f4e8, #edf5ed);
+  display: grid;
+  place-items: center;
+}
+.meal-card-image img,
+.meal-plan-public-card .meal-card-image img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.meal-card-check {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(9,37,21,.9);
+  color: #fff !important;
+  font-size: .68rem !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  backdrop-filter: blur(8px);
+}
+.meal-plan-public-card.selected .meal-card-check {
+  background: var(--gold);
+  color: #0b2416 !important;
+}
+.meal-card-content {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 7px;
+}
+.meal-card-content h3 {
+  font-size: 1.12rem !important;
+  margin: 0 !important;
+}
+.meal-card-content p {
+  font-size: .88rem !important;
+  line-height: 1.42 !important;
+  margin: 0 !important;
+}
+.meal-card-content strong {
+  margin-top: 4px;
+  font-size: 1rem;
+}
+.meal-person-count {
+  position: relative;
+  z-index: 4;
+  margin-top: auto;
+  padding: 12px;
+  border-radius: 20px;
+  background: rgba(17,59,37,.045);
+  opacity: .55;
+}
+.meal-person-count.active {
+  opacity: 1;
+  background: rgba(214,181,82,.13);
+}
+.meal-person-count input:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+}
+.booking-total-box {
+  border-radius: 30px !important;
+  padding: clamp(20px, 3vw, 30px) !important;
+}
+.booking-total-box strong {
+  font-size: clamp(2.15rem, 4vw, 3rem) !important;
+}
+.meal-choice-actions {
+  gap: 14px !important;
+}
+.meal-choice-actions .booking-submit,
+.meal-choice-actions .admin-ghost-btn {
+  background: #123b25 !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  min-height: 56px;
+  font-weight: 950;
+  box-shadow: 0 14px 26px rgba(9,37,21,.18);
+}
+@keyframes mealOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes mealModalIn {
+  from { opacity: 0; transform: translateY(24px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 900px) {
+  .meal-modal-overlay {
+    align-items: end;
+    padding: 14px;
+  }
+  .meal-modal-card {
+    width: 100%;
+    border-radius: 32px;
+    padding: 24px 18px 20px;
+  }
+  .meal-modal-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 22px;
+    font-size: 1.75rem;
+  }
+  .meal-modal-actions {
+    grid-template-columns: 1fr;
+  }
+  .meal-action-button {
+    width: 100%;
+    min-height: 52px;
+  }
+  .meal-select-panel {
+    border-radius: 30px !important;
+    padding: 16px !important;
+  }
+  .meal-plan-grid-public {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .meal-plan-public-card {
+    min-height: auto;
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    align-items: center;
+    padding: 10px !important;
+    border-radius: 26px !important;
+  }
+  .meal-card-image {
+    height: 118px;
+    border-radius: 22px;
+    grid-row: span 2;
+  }
+  .meal-card-content h3 {
+    font-size: 1rem !important;
+  }
+  .meal-card-content p {
+    font-size: .8rem !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .meal-person-count {
+    padding: 9px;
+    grid-column: 2;
+  }
+  .meal-person-count input {
+    height: 38px;
+  }
+  .booking-total-box {
+    border-radius: 26px !important;
+  }
+  .meal-choice-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .meal-plan-public-card {
+    grid-template-columns: 96px 1fr;
+  }
+  .meal-card-image {
+    height: 108px;
+  }
+  .meal-modal-card h3 {
+    font-size: 1.75rem;
+  }
+}
