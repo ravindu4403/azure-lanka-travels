@@ -1,0 +1,20 @@
+{
+  "exchangeRateLkr": 305,
+  "jeepCapacity": 6,
+  "generalAdultTicketUsd": 50,
+  "generalChildTicketUsd": 25,
+  "saarcAdultTicketUsd": 30,
+  "saarcChildTicketUsd": 15,
+  "localAdultTicketUsd": 15,
+  "localChildTicketUsd": 8,
+  "safariPriceMode": "perJeep",
+  "serviceFeeUsd": 0,
+  "showLkrTotal": true,
+  "calculatorNote": "Final park ticket rates can change by authority notice. We confirm the final amount on WhatsApp before payment.",
+  "safariTravelPricesUsd": {
+    "Full-Day Yala Safari": 120,
+    "Half-Day Morning Safari": 70,
+    "Half-Day Evening Safari": 70,
+    "5-12 Yala Safari": 90
+  }
+}

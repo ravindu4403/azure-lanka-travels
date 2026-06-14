@@ -5468,3 +5468,123 @@ body.meal-modal-open .sticky-whatsapp {
   min-height: 46px;
   background: rgba(17, 59, 37, .1);
 }
+
+/* Phase 28: public ticket + travel + meal cost calculator */
+.public-cost-calculator {
+  grid-column: 1 / -1;
+  border-radius: 24px;
+  border: 1px solid rgba(214,181,82,.36);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(214,181,82,.18), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.98), rgba(246,249,244,.96));
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  box-shadow: 0 18px 34px rgba(9,37,21,.08);
+}
+.cost-calculator-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.cost-calculator-head span,
+.public-cost-calculator > small {
+  color: var(--gold-deep);
+  font-weight: 950;
+  font-size: .76rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.cost-calculator-head strong {
+  color: var(--green-900);
+  background: rgba(17,59,37,.08);
+  border: 1px solid rgba(17,59,37,.12);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: .82rem;
+}
+.cost-calculator-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.cost-calculator-grid article {
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(17,59,37,.10);
+  padding: 14px;
+  display: grid;
+  gap: 5px;
+}
+.cost-calculator-grid article span,
+.calculator-meal-mini-grid label span {
+  color: #31523d;
+  font-size: .72rem;
+  font-weight: 950;
+}
+.cost-calculator-grid article strong {
+  color: var(--green-900);
+  font-family: Poppins, sans-serif;
+  font-size: 1.45rem;
+}
+.cost-calculator-grid article small {
+  color: #65736a;
+  font-size: .72rem;
+  line-height: 1.35;
+}
+.calculator-meal-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.calculator-meal-mini-grid label {
+  border-radius: 18px;
+  background: rgba(17,59,37,.05);
+  border: 1px solid rgba(17,59,37,.08);
+  padding: 12px;
+}
+.calculator-meal-mini-grid input { padding: 10px 12px; border-radius: 12px; }
+.pricing-cms-panel { margin-bottom: 24px; }
+.settings-editor-form select {
+  width: 100%;
+  border: 1px solid rgba(46,107,54,.18);
+  border-radius: 18px;
+  background: rgba(255,255,255,.94);
+  padding: 13px 15px;
+  color: #16291d;
+  font-weight: 800;
+  outline: none;
+}
+.admin-checkbox-row {
+  display: flex !important;
+  align-items: center;
+  gap: 12px !important;
+  border-radius: 18px;
+  background: rgba(17,59,37,.05);
+  padding: 14px 16px;
+}
+.admin-checkbox-row input { width: auto !important; }
+.pricing-preview-card h3 { font-size: clamp(1.4rem, 3vw, 2.4rem); }
+
+@media (max-width: 980px) {
+  .cost-calculator-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .cost-calculator-grid,
+  .calculator-meal-mini-grid { grid-template-columns: 1fr; }
+}
+
+/* Phase 29: clearer admin controls for calculator ticket + travel prices */
+.pricing-section-title {
+  margin: 8px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(9, 65, 37, 0.08);
+  color: #094125;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border: 1px solid rgba(191, 148, 21, 0.22);
+}

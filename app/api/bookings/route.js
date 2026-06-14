@@ -44,13 +44,17 @@ export async function POST(request) {
   const mealSelections = normalizeMealSelections(body.mealSelections);
   const mealTotalUsd = Number(mealSelections.reduce((sum, item) => sum + item.lineTotalUsd, 0).toFixed(2));
   const safariPriceUsd = Math.max(0, Number(body.safariPriceUsd || 0));
-  const grandTotalUsd = Number((safariPriceUsd + mealTotalUsd).toFixed(2));
+  const ticketTotalUsd = Math.max(0, Number(body.ticketTotalUsd || 0));
+  const serviceFeeUsd = Math.max(0, Number(body.serviceFeeUsd || 0));
+  const exchangeRateLkr = Math.max(0, Number(body.exchangeRateLkr || 0));
+  const grandTotalUsd = Number((ticketTotalUsd + safariPriceUsd + mealTotalUsd + serviceFeeUsd).toFixed(2));
 
   const bookings = await readCollection('bookings');
   const booking = {
     id: makeId('BK'),
     guest,
     country: cleanText(body.country || body.nationality || 'Not selected'),
+    visitorCategory: cleanText(body.visitorCategory || body.nationality || 'Not selected'),
     package: safariPackage,
     date,
     adults,
@@ -63,8 +67,12 @@ export async function POST(request) {
     mealPlanRequired: mealSelections.length > 0,
     mealSelections,
     safariPriceUsd,
+    ticketTotalUsd,
     mealTotalUsd,
+    serviceFeeUsd,
     grandTotalUsd,
+    exchangeRateLkr,
+    grandTotalLkr: exchangeRateLkr ? Math.round(grandTotalUsd * exchangeRateLkr) : 0,
     currency: 'USD',
     status: 'Pending',
     submittedAt: new Date().toISOString(),

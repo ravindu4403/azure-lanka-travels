@@ -188,7 +188,7 @@ export function BookingsTable() {
                   ) : <small>No meals</small>}
                   <small>{row.jeeps} jeep(s)</small>
                 </td>
-                <td><strong>${Number(row.grandTotalUsd || row.safariPriceUsd || 0)}</strong><small>Meals: ${Number(row.mealTotalUsd || 0)}</small></td>
+                <td><strong>${Number(row.grandTotalUsd || row.safariPriceUsd || 0)}</strong><small>Tickets: ${Number(row.ticketTotalUsd || 0)} · Meals: ${Number(row.mealTotalUsd || 0)}</small>{row.grandTotalLkr ? <small>LKR {Number(row.grandTotalLkr).toLocaleString()}</small> : null}</td>
                 <td><span className={`admin-status ${String(row.status).toLowerCase()}`}>{row.status}</span></td>
                 <td><strong>{row.whatsapp || 'No WhatsApp'}</strong><small>{row.email}</small></td>
                 <td>
@@ -236,16 +236,18 @@ function BookingDetailsModal({ booking, saving, onClose, onStatusChange }) {
 
         <div className="booking-detail-status-line">
           <span className={`admin-status ${String(booking.status).toLowerCase()}`}>{booking.status}</span>
-          <strong>Grand Total: ${Number(booking.grandTotalUsd || booking.safariPriceUsd || 0)}</strong>
+          <strong>Grand Total: ${Number(booking.grandTotalUsd || booking.safariPriceUsd || 0)} {booking.grandTotalLkr ? `/ LKR ${Number(booking.grandTotalLkr).toLocaleString()}` : ''}</strong>
         </div>
 
         <div className="booking-detail-grid">
-          <article><span>Guest Name</span><strong>{booking.guest}</strong><small>{booking.country}</small></article>
+          <article><span>Guest Name</span><strong>{booking.guest}</strong><small>{booking.country} · {booking.visitorCategory || 'Not selected'}</small></article>
           <article><span>Contact</span><strong>{booking.whatsapp || 'No WhatsApp'}</strong><small>{booking.email}</small></article>
           <article><span>People</span><strong>{booking.people || 0} guests</strong><small>{booking.adults || 0} adults • {booking.children || 0} children</small></article>
-          <article><span>Jeep Count</span><strong>{booking.jeeps || 1}</strong><small>Maximum 6 guests per jeep</small></article>
-          <article><span>Safari Price</span><strong>${Number(booking.safariPriceUsd || 0)}</strong><small>USD</small></article>
+          <article><span>Jeep Count</span><strong>{booking.jeeps || 1}</strong><small>Auto calculated by guest count</small></article>
+          <article><span>Park Tickets</span><strong>${Number(booking.ticketTotalUsd || 0)}</strong><small>USD</small></article>
+          <article><span>Safari / Travel</span><strong>${Number(booking.safariPriceUsd || 0)}</strong><small>USD</small></article>
           <article><span>Meal Total</span><strong>${Number(booking.mealTotalUsd || 0)}</strong><small>{meals.length ? `${meals.length} selected meal plan(s)` : 'No meals selected'}</small></article>
+          <article><span>Service Fee</span><strong>${Number(booking.serviceFeeUsd || 0)}</strong><small>Exchange: {booking.exchangeRateLkr ? `1 USD = LKR ${booking.exchangeRateLkr}` : 'Not saved'}</small></article>
           <article><span>Submitted</span><strong>{submitted}</strong><small>Website booking form</small></article>
           <article><span>Note / Pickup</span><strong>{booking.note || 'No special request'}</strong><small>Customer request</small></article>
         </div>

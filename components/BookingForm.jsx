@@ -38,11 +38,43 @@ const initialForm = {
   date: '',
   adults: 2,
   children: 0,
-  nationality: 'Foreign Tourist',
+  country: 'United Kingdom',
+  nationality: 'General Countries',
   whatsapp: '',
   email: '',
   note: '',
 };
+
+const defaultSafariTravelPricesUsd = {
+  'Full-Day Yala Safari': 120,
+  'Half-Day Morning Safari': 70,
+  'Half-Day Evening Safari': 70,
+  '5-12 Yala Safari': 90,
+};
+
+const defaultPricingSettings = {
+  exchangeRateLkr: 305,
+  jeepCapacity: 6,
+  generalAdultTicketUsd: 50,
+  generalChildTicketUsd: 25,
+  saarcAdultTicketUsd: 30,
+  saarcChildTicketUsd: 15,
+  localAdultTicketUsd: 15,
+  localChildTicketUsd: 8,
+  safariPriceMode: 'perJeep',
+  safariTravelPricesUsd: defaultSafariTravelPricesUsd,
+  serviceFeeUsd: 0,
+  showLkrTotal: true,
+  calculatorNote: 'Final amount is confirmed by our team on WhatsApp before payment.',
+};
+
+const saarcCountries = ['Afghanistan', 'Bangladesh', 'Bhutan', 'India', 'Maldives', 'Nepal', 'Pakistan', 'Sri Lanka'];
+
+const countryOptions = [
+  'United Kingdom', 'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Australia', 'United States', 'Canada',
+  ...saarcCountries,
+  'China', 'Japan', 'South Korea', 'Other Country',
+];
 
 function priceToUsd(value) {
   const number = Number(String(value || '').replace(/[^0-9.]/g, ''));
@@ -53,7 +85,9 @@ export default function BookingForm({ settings }) {
   const [form, setForm] = useState(initialForm);
   const [safariPackages, setSafariPackages] = useState(fallbackSafariTypes);
   const [mealPlans, setMealPlans] = useState(fallbackMealPlans);
+  const [pricingSettings, setPricingSettings] = useState(defaultPricingSettings);
   const [selectedMeals, setSelectedMeals] = useState({});
+  const [calculatorMeals, setCalculatorMeals] = useState({});
   const [selectedNotice, setSelectedNotice] = useState('');
   const [step, setStep] = useState('details');
   const [status, setStatus] = useState({ type: 'idle', message: '' });
@@ -91,6 +125,18 @@ export default function BookingForm({ settings }) {
       }
     }
 
+    async function loadPricingSettings() {
+      try {
+        const response = await fetch('/api/pricing-settings', { cache: 'no-store' });
+        const result = await response.json();
+        if (!ignore && result.success && result.pricingSettings) {
+          setPricingSettings({ ...defaultPricingSettings, ...result.pricingSettings });
+        }
+      } catch (error) {
+        // Keep fallback pricing for static preview/build mode.
+      }
+    }
+
     function selectPackage(event) {
       const packageTitle = event.detail?.packageTitle;
       if (!packageTitle) return;
@@ -101,6 +147,7 @@ export default function BookingForm({ settings }) {
 
     loadSafariTypes();
     loadMealPlans();
+    loadPricingSettings();
     window.addEventListener('azure-package-selected', selectPackage);
     return () => {
       ignore = true;
@@ -122,10 +169,35 @@ export default function BookingForm({ settings }) {
     return () => window.clearTimeout(timer);
   }, [step]);
 
-  const totalGuests = Math.max(0, Number(form.adults || 0)) + Math.max(0, Number(form.children || 0));
-  const jeepCount = Math.max(1, Math.ceil(totalGuests / 6));
+  const adultsCount = Math.max(0, Number(form.adults || 0));
+  const childrenCount = Math.max(0, Number(form.children || 0));
+  const totalGuests = adultsCount + childrenCount;
+  const jeepCapacity = Math.max(1, Number(pricingSettings.jeepCapacity || 6));
+  const jeepCount = Math.max(1, Math.ceil(totalGuests / jeepCapacity));
   const selectedSafariPackage = safariPackages.find((pkg) => pkg.title === form.safariType) || safariPackages[0] || fallbackSafariTypes[0];
-  const safariPriceUsd = priceToUsd(selectedSafariPackage?.price);
+  const safariUnitPriceUsd = Number(
+    pricingSettings.safariTravelPricesUsd?.[selectedSafariPackage?.title] ?? priceToUsd(selectedSafariPackage?.price)
+  );
+  const safariPriceUsd = Number((pricingSettings.safariPriceMode === 'perBooking' ? safariUnitPriceUsd : safariUnitPriceUsd * jeepCount).toFixed(2));
+  const visitorCategory = form.nationality === 'Local / Resident' || form.country === 'Sri Lanka'
+    ? 'local'
+    : saarcCountries.includes(form.country) || form.nationality === 'SAARC Countries'
+      ? 'saarc'
+      : 'general';
+  const adultTicketUsd = Number(pricingSettings[`${visitorCategory}AdultTicketUsd`] || pricingSettings.generalAdultTicketUsd || 0);
+  const childTicketUsd = Number(pricingSettings[`${visitorCategory}ChildTicketUsd`] || pricingSettings.generalChildTicketUsd || 0);
+  const ticketTotalUsd = Number(((adultsCount * adultTicketUsd) + (childrenCount * childTicketUsd)).toFixed(2));
+  const serviceFeeUsd = Number(pricingSettings.serviceFeeUsd || 0);
+  const calculatorMealSelections = useMemo(() => {
+    return mealPlans.map((meal) => {
+      const persons = Math.max(0, Number(calculatorMeals[meal.id] || 0));
+      const priceUsd = Math.max(0, Number(meal.priceUsd || 0));
+      return { id: meal.id, title: meal.title, priceUsd, persons, lineTotalUsd: Number((priceUsd * persons).toFixed(2)) };
+    }).filter((item) => item.persons > 0);
+  }, [mealPlans, calculatorMeals]);
+  const calculatorMealTotalUsd = Number(calculatorMealSelections.reduce((sum, item) => sum + item.lineTotalUsd, 0).toFixed(2));
+  const calculatorTotalUsd = Number((ticketTotalUsd + safariPriceUsd + calculatorMealTotalUsd + serviceFeeUsd).toFixed(2));
+  const calculatorTotalLkr = Number((calculatorTotalUsd * Number(pricingSettings.exchangeRateLkr || 0)).toFixed(0));
 
   const mealSelections = useMemo(() => {
     return mealPlans
@@ -144,7 +216,7 @@ export default function BookingForm({ settings }) {
   }, [mealPlans, selectedMeals, totalGuests]);
 
   const mealTotalUsd = Number(mealSelections.reduce((sum, item) => sum + item.lineTotalUsd, 0).toFixed(2));
-  const grandTotalUsd = Number((safariPriceUsd + mealTotalUsd).toFixed(2));
+  const grandTotalUsd = Number((ticketTotalUsd + safariPriceUsd + mealTotalUsd + serviceFeeUsd).toFixed(2));
 
   function buildWhatsappUrl(effectiveMealSelections = mealSelections, effectiveMealTotalUsd = mealTotalUsd, effectiveGrandTotalUsd = grandTotalUsd) {
     const mealLines = effectiveMealSelections.length
@@ -162,7 +234,8 @@ export default function BookingForm({ settings }) {
       `Children: ${form.children || 0}`,
       `Total Guests: ${totalGuests}`,
       `Jeep Count: ${jeepCount}`,
-      `Nationality: ${form.nationality || 'Not selected'}`,
+      `Country: ${form.country || 'Not selected'}`,
+      `Visitor Category: ${form.nationality || 'Not selected'}`,
       `WhatsApp: ${form.whatsapp || 'Not added'}`,
       `Email: ${form.email || 'Not added'}`,
       `Note: ${form.note || 'No special note'}`,
@@ -170,9 +243,12 @@ export default function BookingForm({ settings }) {
       'Meal Plans:',
       mealLines,
       '',
-      `Safari Price: $${safariPriceUsd}`,
+      `Park Tickets: $${ticketTotalUsd}`,
+      `Safari / Travel: $${safariPriceUsd}`,
       `Meal Total: $${effectiveMealTotalUsd}`,
-      `Full Estimated Total: $${effectiveGrandTotalUsd}`,
+      `Service Fee: $${serviceFeeUsd}`,
+      `Full Estimated Total: $${effectiveGrandTotalUsd} USD`,
+      `Estimated LKR: LKR ${Math.round(effectiveGrandTotalUsd * Number(pricingSettings.exchangeRateLkr || 0)).toLocaleString()}`,
     ].join('\n');
     const number = String(settings?.whatsappNumber || '94700000000').replace(/[^0-9]/g, '');
     return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
@@ -220,7 +296,12 @@ export default function BookingForm({ settings }) {
           mealSelections: includeMeals ? mealSelections : [],
           safariPriceUsd,
           mealTotalUsd: includeMeals ? mealTotalUsd : 0,
-          grandTotalUsd: includeMeals ? grandTotalUsd : safariPriceUsd,
+          country: form.country,
+          visitorCategory: form.nationality,
+          ticketTotalUsd,
+          serviceFeeUsd,
+          exchangeRateLkr: pricingSettings.exchangeRateLkr,
+          grandTotalUsd: includeMeals ? grandTotalUsd : Number((ticketTotalUsd + safariPriceUsd + serviceFeeUsd).toFixed(2)),
         }),
       });
       const result = await response.json();
@@ -234,7 +315,7 @@ export default function BookingForm({ settings }) {
       });
       const effectiveMeals = includeMeals ? mealSelections : [];
       const effectiveMealTotal = includeMeals ? mealTotalUsd : 0;
-      const effectiveGrandTotal = includeMeals ? grandTotalUsd : safariPriceUsd;
+      const effectiveGrandTotal = includeMeals ? grandTotalUsd : Number((ticketTotalUsd + safariPriceUsd + serviceFeeUsd).toFixed(2));
       window.open(buildWhatsappUrl(effectiveMeals, effectiveMealTotal, effectiveGrandTotal), '_blank', 'noopener,noreferrer');
       setForm((current) => ({ ...current, note: '' }));
       setStep('details');
@@ -261,7 +342,7 @@ export default function BookingForm({ settings }) {
         <div className="booking-app-card" aria-label="Estimated safari booking summary">
           <span>Auto Calculated Jeep Count</span>
           <strong>{jeepCount}</strong>
-          <small>{totalGuests || 0} guests • maximum 6 guests per jeep</small>
+          <small>{totalGuests || 0} guests • maximum {jeepCapacity} guests per jeep</small>
         </div>
       </div>
 
@@ -289,9 +370,23 @@ export default function BookingForm({ settings }) {
               <input name="date" type="date" value={form.date} onChange={updateField} aria-label="Safari date" required />
             </label>
             <label>
-              <span>Nationality</span>
+              <span>Country</span>
+              <select name="country" value={form.country} onChange={(event) => {
+                const nextCountry = event.target.value;
+                setForm((current) => ({
+                  ...current,
+                  country: nextCountry,
+                  nationality: nextCountry === 'Sri Lanka' ? 'Local / Resident' : saarcCountries.includes(nextCountry) ? 'SAARC Countries' : 'General Countries',
+                }));
+              }} required>
+                {countryOptions.map((country) => <option key={country}>{country}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>Visitor Category</span>
               <select name="nationality" value={form.nationality} onChange={updateField} required>
-                <option>Foreign Tourist</option>
+                <option>General Countries</option>
+                <option>SAARC Countries</option>
                 <option>Local / Resident</option>
               </select>
             </label>
@@ -317,6 +412,28 @@ export default function BookingForm({ settings }) {
               <span>Pickup / Special Request</span>
               <textarea name="note" placeholder="Pickup hotel, preferred time, meal request..." rows="4" value={form.note} onChange={updateField} />
             </label>
+
+            <div className="public-cost-calculator">
+              <div className="cost-calculator-head">
+                <span>Live Cost Calculator</span>
+                <strong>{form.nationality}</strong>
+              </div>
+              <div className="cost-calculator-grid">
+                <article><span>Park Tickets</span><strong>${ticketTotalUsd}</strong><small>Adults ${adultTicketUsd} × {adultsCount} · Children ${childTicketUsd} × {childrenCount}</small></article>
+                <article><span>Safari / Travel</span><strong>${safariPriceUsd}</strong><small>{pricingSettings.safariPriceMode === 'perBooking' ? 'Package price once' : `$${safariUnitPriceUsd} × ${jeepCount} jeep(s)`}</small></article>
+                <article><span>Meals Estimate</span><strong>${calculatorMealTotalUsd}</strong><small>Select food quantities below</small></article>
+                <article><span>Total Estimate</span><strong>${calculatorTotalUsd}</strong><small>{pricingSettings.showLkrTotal ? `Approx. LKR ${calculatorTotalLkr.toLocaleString()}` : 'USD total only'}</small></article>
+              </div>
+              <div className="calculator-meal-mini-grid">
+                {mealPlans.map((meal) => (
+                  <label key={meal.id}>
+                    <span>{meal.title} (${Number(meal.priceUsd || 0)} pp)</span>
+                    <input type="number" min="0" value={calculatorMeals[meal.id] || 0} onChange={(event) => setCalculatorMeals((current) => ({ ...current, [meal.id]: Math.max(0, Number(event.target.value || 0)) }))} />
+                  </label>
+                ))}
+              </div>
+              <small>{pricingSettings.calculatorNote}</small>
+            </div>
             <button className="booking-submit" type="submit">Continue</button>
             {status.message && <p className={`form-status ${status.type}`}>{status.message}{bookingId ? ` Ref: ${bookingId}` : ''}</p>}
             <small>After Continue: visitor can choose whether to add a meal plan before WhatsApp opens.</small>
@@ -374,8 +491,8 @@ export default function BookingForm({ settings }) {
             <div className="booking-total-box">
               <span>Meal Total</span>
               <strong>${mealTotalUsd}</strong>
-              <small>Safari selected: {form.safariType} • Safari price: ${safariPriceUsd}</small>
-              <b>Full Estimated Total: ${grandTotalUsd} USD</b>
+              <small>Tickets: ${ticketTotalUsd} • Safari/travel: ${safariPriceUsd} • Service: ${serviceFeeUsd}</small>
+              <b>Full Estimated Total: ${grandTotalUsd} USD / LKR {Math.round(grandTotalUsd * Number(pricingSettings.exchangeRateLkr || 0)).toLocaleString()}</b>
             </div>
             <div className="meal-choice-actions">
               <button type="button" className="admin-ghost-btn" onClick={() => setStep('meal-choice')}>Back</button>
